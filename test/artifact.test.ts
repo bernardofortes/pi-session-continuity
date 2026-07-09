@@ -31,8 +31,8 @@ function frontmatter(
 		synthesisEffort: "medium",
 		tokenCountAtTrigger: 100,
 		contextWindow: 1000,
-		triggerAtPercent: 65,
-		keepRecentPercent: 15,
+		triggerAtPercent: 75,
+		keepRecentPercent: 20,
 		branchLeafBefore: "leaf-1",
 		...overrides,
 	});

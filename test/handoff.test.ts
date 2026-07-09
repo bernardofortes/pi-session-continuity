@@ -102,7 +102,7 @@ function fakeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
 		abort: vi.fn(),
 		shutdown: vi.fn(),
 		hasPendingMessages: () => false,
-		getContextUsage: () => ({ tokens: 650, contextWindow: 1000, percent: 65 }),
+		getContextUsage: () => ({ tokens: 750, contextWindow: 1000, percent: 75 }),
 		compact: vi.fn(),
 		getSystemPrompt: () => "active system prompt",
 		...overrides,
@@ -494,7 +494,7 @@ describe("continuity handoff", () => {
 		expect(sent).toEqual([]);
 		expect(compact).toHaveBeenCalledTimes(1);
 		expect(compact.mock.calls[0][0].customInstructions).toContain(
-			"newest 150 tokens",
+			"newest 200 tokens",
 		);
 		expect(compact.mock.calls[0][0].customInstructions).toContain(
 			result.pendingPath,

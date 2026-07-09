@@ -1,7 +1,9 @@
 node_modules/
 .pi-subagents/
+.orchestrate/
 *.tgz
 .pi/session-continuity/
 .pi/continue/
+.pi/session-continuity.json
 coverage/
 dist/

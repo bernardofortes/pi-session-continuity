@@ -17,8 +17,8 @@ describe("config validation", () => {
 		const result = validateConfig(
 			{
 				enabled: true,
-				triggerAtPercent: 65,
-				keepRecentPercent: 15,
+				triggerAtPercent: 75,
+				keepRecentPercent: 20,
 				synthesisModel: "inherit",
 				synthesisEffort: "medium",
 				artifactDirectory: "session-continuity",
@@ -26,7 +26,7 @@ describe("config validation", () => {
 			path,
 		);
 		expect(result.errors).toEqual([]);
-		expect(result.config?.triggerAtPercent).toBe(65);
+		expect(result.config?.triggerAtPercent).toBe(75);
 		expect(result.config?.synthesisEffort).toBe("medium");
 	});
 
@@ -39,18 +39,18 @@ describe("config validation", () => {
 
 	it("rejects invalid percentage values", () => {
 		expect(
-			validateConfig({ triggerAtPercent: 0, keepRecentPercent: 15 }, path)
+			validateConfig({ triggerAtPercent: 0, keepRecentPercent: 20 }, path)
 				.errors,
 		).toContain("triggerAtPercent must be positive and below 100");
 		expect(
-			validateConfig({ triggerAtPercent: 65, keepRecentPercent: 100 }, path)
+			validateConfig({ triggerAtPercent: 75, keepRecentPercent: 100 }, path)
 				.errors,
 		).toContain("keepRecentPercent must be positive and below 100");
 	});
 
 	it("rejects keepRecentPercent at or above triggerAtPercent", () => {
 		const result = validateConfig(
-			{ triggerAtPercent: 65, keepRecentPercent: 65 },
+			{ triggerAtPercent: 75, keepRecentPercent: 75 },
 			path,
 		);
 		expect(result.errors).toContain(
@@ -59,14 +59,14 @@ describe("config validation", () => {
 	});
 
 	it("calculates trigger percentage across different context windows", () => {
-		expect(shouldTriggerHandoff(83_200, 128_000, 65)).toBe(true);
-		expect(shouldTriggerHandoff(649_999, 1_000_000, 65)).toBe(false);
-		expect(shouldTriggerHandoff(650_000, 1_000_000, 65)).toBe(true);
+		expect(shouldTriggerHandoff(96_000, 128_000, 75)).toBe(true);
+		expect(shouldTriggerHandoff(749_999, 1_000_000, 75)).toBe(false);
+		expect(shouldTriggerHandoff(750_000, 1_000_000, 75)).toBe(true);
 	});
 
 	it("derives keep recent tokens from active model context window", () => {
-		expect(deriveKeepRecentTokens(128_000, 15)).toBe(19_200);
-		expect(deriveKeepRecentTokens(1_000_000, 15)).toBe(150_000);
+		expect(deriveKeepRecentTokens(128_000, 20)).toBe(25_600);
+		expect(deriveKeepRecentTokens(1_000_000, 20)).toBe(200_000);
 	});
 
 	it("resolves relative artifact directories under the config directory", async () => {
@@ -88,7 +88,7 @@ describe("config validation", () => {
 			await writeConfigToDisk(configPath, {
 				enabled: true,
 				triggerAtPercent: 75,
-				keepRecentPercent: 15,
+				keepRecentPercent: 20,
 				synthesisModel: "inherit",
 				synthesisEffort: "high",
 				artifactDirectory: "session-continuity",
@@ -96,7 +96,7 @@ describe("config validation", () => {
 			const config = await loadConfigFromDisk(dir, ".pi", true);
 			expect(config.valid).toBe(true);
 			expect(config.triggerAtPercent).toBe(75);
-			expect(config.keepRecentPercent).toBe(15);
+			expect(config.keepRecentPercent).toBe(20);
 			expect(config.synthesisEffort).toBe("high");
 		} finally {
 			await rm(dir, { recursive: true, force: true });
@@ -110,8 +110,8 @@ describe("config validation", () => {
 			await expect(
 				writeConfigToDisk(configPath, {
 					enabled: true,
-					triggerAtPercent: 15,
-					keepRecentPercent: 15,
+					triggerAtPercent: 20,
+					keepRecentPercent: 20,
 					synthesisModel: "inherit",
 					synthesisEffort: "medium",
 					artifactDirectory: "session-continuity",
@@ -123,7 +123,7 @@ describe("config validation", () => {
 				writeConfigToDisk(configPath, {
 					enabled: true,
 					triggerAtPercent: 75,
-					keepRecentPercent: 15,
+					keepRecentPercent: 20,
 					synthesisModel: "inherit",
 					synthesisEffort: "medium",
 					artifactDirectory: "../outside",
@@ -131,7 +131,7 @@ describe("config validation", () => {
 			).rejects.toThrow("artifactDirectory must resolve under");
 			const config = await loadConfigFromDisk(dir, ".pi", true);
 			expect(config.valid).toBe(true);
-			expect(config.triggerAtPercent).toBe(65);
+			expect(config.triggerAtPercent).toBe(75);
 		} finally {
 			await rm(dir, { recursive: true, force: true });
 		}

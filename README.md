@@ -58,8 +58,8 @@ Defaults:
 ```json
 {
   "enabled": true,
-  "triggerAtPercent": 65,
-  "keepRecentPercent": 15,
+  "triggerAtPercent": 75,
+  "keepRecentPercent": 20,
   "synthesisModel": "inherit",
   "synthesisEffort": "medium",
   "artifactDirectory": "session-continuity"

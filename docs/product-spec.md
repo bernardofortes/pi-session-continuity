@@ -79,8 +79,8 @@ Default threshold config:
 
 ```json
 {
-  "triggerAtPercent": 65,
-  "keepRecentPercent": 15
+  "triggerAtPercent": 75,
+  "keepRecentPercent": 20
 }
 ```
 
@@ -108,8 +108,8 @@ Configuration should stay small for v0.1.0:
 ```json
 {
   "enabled": true,
-  "triggerAtPercent": 65,
-  "keepRecentPercent": 15,
+  "triggerAtPercent": 75,
+  "keepRecentPercent": 20,
   "synthesisModel": "inherit",
   "synthesisEffort": "medium",
   "artifactDirectory": "session-continuity"
@@ -190,8 +190,8 @@ synthesisModel: "resolved-provider/model"
 synthesisEffort: "medium"
 tokenCountAtTrigger: 0
 contextWindow: 0
-triggerAtPercent: 65
-keepRecentPercent: 15
+triggerAtPercent: 75
+keepRecentPercent: 20
 branchLeafBefore: "entry-id-or-null"
 ---
 ```
@@ -327,12 +327,12 @@ The injected prompt must include the saved Continuity Brief content read from di
 
 All user-visible messages should be short, verifiable, and product-prefixed. In interactive Pi TUI mode, detailed `/continuity status` and `/continuity settings` output should be rendered as intentional user-facing output, not as a persistent oversized widget or long background/internal-looking chatter. Notifications should not escalate to warning severity unless the headline is actually disabled, invalid, failed, or otherwise unsafe.
 
-The output should use human-readable labels only for the normal status panel. Do not repeat the same values in a separate diagnostics block; concrete paths that matter to the user, such as the artifact directory or last artifact path, should appear once in the main panel. Persistent footer/status-line text should stay compact, for example `PSC 75/15`, so it does not crowd the terminal footer.
+The output should use human-readable labels only for the normal status panel. Do not repeat the same values in a separate diagnostics block; concrete paths that matter to the user, such as the artifact directory or last artifact path, should appear once in the main panel. Persistent footer/status-line text should stay compact, for example `Session Continuation @ 75%`, so it does not crowd the terminal footer.
 
 Idle/enabled:
 
 ```text
-Pi Session Continuity: enabled · trigger 65% · keep 15%.
+Pi Session Continuity: enabled · trigger 75% · keep 20%.
 ```
 
 Explicitly disabled:
@@ -541,7 +541,7 @@ Minimum Pi smoke checks must be represented by a runnable script or documented m
 3. `required-identity-present`: artifact includes `eventId`, `sessionId`, `sessionFile`, `createdAt`, and `updatedAt`.
 4. `reload-stale-is-inert`: reload does not inject a stale pending artifact; status reports it as inert.
 5. `duplicate-trigger-single-flight`: duplicate trigger while a handoff is active creates one artifact and one lock only.
-6. `threshold-percent-model-change`: threshold math preserves 65% trigger intent across at least two model context windows.
+6. `threshold-percent-model-change`: threshold math preserves 75% trigger intent across at least two model context windows.
 7. `synthesis-failure-no-prompt`: forced synthesis failure queues no resume prompt and reports failure.
 8. `write-failure-no-prompt`: forced artifact write failure queues no resume prompt and reports failure.
 9. `cross-session-rejected`: artifact from another `sessionId` is not used automatically.

@@ -7,8 +7,8 @@ function config(
 ): ResolvedContinuityConfig {
 	return {
 		enabled: true,
-		triggerAtPercent: 65,
-		keepRecentPercent: 15,
+		triggerAtPercent: 75,
+		keepRecentPercent: 20,
 		synthesisModel: "inherit",
 		synthesisEffort: "medium",
 		artifactDirectory: "session-continuity",
@@ -49,32 +49,32 @@ describe("automatic threshold trigger decisions", () => {
 			decideAutomaticTrigger(config(), { tokens: null, contextWindow: 1000 }),
 		).toEqual({ shouldRun: false, reason: "window-unavailable" });
 		expect(
-			decideAutomaticTrigger(config(), { tokens: 650, contextWindow: 0 }),
+			decideAutomaticTrigger(config(), { tokens: 750, contextWindow: 0 }),
 		).toEqual({ shouldRun: false, reason: "window-unavailable" });
 	});
 
 	it("fires at the configured percentage across model windows", () => {
 		expect(
 			decideAutomaticTrigger(config(), {
-				tokens: 83_199,
+				tokens: 95_999,
 				contextWindow: 128_000,
 			}),
 		).toEqual({ shouldRun: false, reason: "below-threshold" });
 		expect(
 			decideAutomaticTrigger(config(), {
-				tokens: 83_200,
+				tokens: 96_000,
 				contextWindow: 128_000,
 			}),
 		).toEqual({ shouldRun: true, reason: "threshold-reached" });
 		expect(
 			decideAutomaticTrigger(config(), {
-				tokens: 649_999,
+				tokens: 749_999,
 				contextWindow: 1_000_000,
 			}),
 		).toEqual({ shouldRun: false, reason: "below-threshold" });
 		expect(
 			decideAutomaticTrigger(config(), {
-				tokens: 650_000,
+				tokens: 750_000,
 				contextWindow: 1_000_000,
 			}),
 		).toEqual({ shouldRun: true, reason: "threshold-reached" });
