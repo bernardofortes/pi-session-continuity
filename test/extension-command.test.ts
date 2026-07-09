@@ -96,6 +96,50 @@ describe("continuity command dispatch", () => {
 		expect(runtime.sendMessage).not.toHaveBeenCalled();
 	});
 
+	it("updates the footer status immediately after settings changes", async () => {
+		const runtime = fakePi();
+		sessionContinuityExtension(runtime.pi);
+		const ctx = fakeCtx();
+		ctx.ui.select
+			.mockResolvedValueOnce("Trigger threshold: 75%")
+			.mockResolvedValueOnce("80%")
+			.mockResolvedValueOnce("Done");
+
+		await runtime.commandHandler()("settings", ctx);
+
+		expect(ctx.ui.select).toHaveBeenNthCalledWith(
+			2,
+			"Trigger when context reaches",
+			["50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%"],
+		);
+		expect(ctx.ui.notify).toHaveBeenCalledWith(
+			"Pi Session Continuity: settings saved.",
+			"info",
+		);
+		expect(ctx.ui.setStatus).toHaveBeenLastCalledWith(
+			"session-continuity",
+			"Session Continuation @ 80%",
+		);
+	});
+
+	it("limits keep-after-handoff choices to low retention percentages", async () => {
+		const runtime = fakePi();
+		sessionContinuityExtension(runtime.pi);
+		const ctx = fakeCtx();
+		ctx.ui.select
+			.mockResolvedValueOnce("Keep after handoff: 20%")
+			.mockResolvedValueOnce("25%")
+			.mockResolvedValueOnce("Done");
+
+		await runtime.commandHandler()("settings", ctx);
+
+		expect(ctx.ui.select).toHaveBeenNthCalledWith(
+			2,
+			"Keep recent context after handoff",
+			["5%", "10%", "15%", "20%", "25%"],
+		);
+	});
+
 	it("keeps /continuity status routed to the textual status panel", async () => {
 		const runtime = fakePi();
 		sessionContinuityExtension(runtime.pi);
@@ -110,5 +154,27 @@ describe("continuity command dispatch", () => {
 				content: expect.stringContaining("Status"),
 			}),
 		);
+	});
+
+	it("prints /continuity status in non-UI mode", async () => {
+		const runtime = fakePi();
+		sessionContinuityExtension(runtime.pi);
+		const ctx = {
+			...fakeCtx(),
+			mode: "print",
+			hasUI: false,
+		} as ExtensionContext;
+		const write = vi
+			.spyOn(process.stdout, "write")
+			.mockImplementation(() => true);
+
+		try {
+			await runtime.commandHandler()("status", ctx);
+
+			expect(runtime.sendMessage).not.toHaveBeenCalled();
+			expect(write).toHaveBeenCalledWith(expect.stringContaining("Status\n"));
+		} finally {
+			write.mockRestore();
+		}
 	});
 });

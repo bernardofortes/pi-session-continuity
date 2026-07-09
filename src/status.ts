@@ -41,20 +41,25 @@ export async function findStalePendingArtifacts(
 	}
 }
 
-export function formatStatus(
+export function statusHeadlineForConfig(
 	config: ResolvedContinuityConfig,
-	state: HandoffState,
-	stalePendingPath?: string,
 ): string {
-	const headline = !config.trusted
+	return !config.trusted
 		? `${PRODUCT_NAME}: automatic behavior disabled because project is not trusted.`
 		: !config.valid
 			? `${PRODUCT_NAME} disabled: invalid configuration in ${config.configPath}.`
 			: config.enabled
 				? `${PRODUCT_NAME}: enabled · trigger ${config.triggerAtPercent}% · keep ${config.keepRecentPercent}%.`
 				: `${PRODUCT_NAME}: disabled by configuration.`;
+}
+
+export function formatStatus(
+	config: ResolvedContinuityConfig,
+	state: HandoffState,
+	stalePendingPath?: string,
+): string {
 	const lines = [
-		headline,
+		statusHeadlineForConfig(config),
 		"",
 		"Status",
 		`- Mode: ${config.enabled && config.valid && config.trusted ? "Enabled" : "Disabled"}`,
@@ -107,7 +112,7 @@ export function notificationLevelForMessage(
 export function footerStatusForMessage(message: string): string {
 	const headline = message.split("\n")[0] ?? "";
 	const threshold = headline.match(/trigger (\d+)% · keep (\d+)%/);
-	if (threshold) return `PSC ${threshold[1]}/${threshold[2]}`;
+	if (threshold) return `Session Continuation @ ${threshold[1]}%`;
 	const normalized = headline.toLowerCase();
 	if (normalized.includes("settings")) return "PSC settings";
 	if (normalized.includes("checkpoint") || normalized.includes("handoff"))

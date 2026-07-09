@@ -24,6 +24,7 @@ import {
 	formatSettings,
 	formatStatus,
 	notifyStatus,
+	statusHeadlineForConfig,
 } from "../../src/status.js";
 import { decideAutomaticTrigger } from "../../src/trigger.js";
 
@@ -43,6 +44,14 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		},
 	);
 
+	function showCommandOutput(ctx: ExtensionContext, message: string): void {
+		if (!ctx.hasUI) {
+			process.stdout.write(`${message}\n`);
+			return;
+		}
+		notifyStatus(ctx, message);
+	}
+
 	function showCommandPanel(ctx: ExtensionContext, message: string): void {
 		if (ctx.hasUI && ctx.mode === "tui") {
 			pi.sendMessage({
@@ -54,7 +63,7 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 			ctx.ui.setStatus("session-continuity", footerStatusForMessage(message));
 			return;
 		}
-		notifyStatus(ctx, message);
+		showCommandOutput(ctx, message);
 	}
 
 	async function refreshConfig(
@@ -80,19 +89,21 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		await writeConfigToDisk(config.configPath, draft);
 		const refreshed = await refreshConfig(ctx);
 		ctx.ui.notify(`${PRODUCT_NAME}: settings saved.`, "info");
+		ctx.ui.setStatus(
+			"session-continuity",
+			footerStatusForMessage(statusHeadlineForConfig(refreshed)),
+		);
 		return refreshed;
 	}
 
-	function percentChoices(
-		current: number,
-		predicate: (value: number) => boolean,
-	) {
-		return Array.from(
-			new Set([5, 10, 15, 20, 25, 50, 60, 65, 70, 75, 80, 85, 90, current]),
-		)
+	function triggerPercentChoices(predicate: (value: number) => boolean) {
+		return Array.from({ length: 10 }, (_, index) => 50 + index * 5)
 			.filter(predicate)
-			.sort((a, b) => a - b)
 			.map((value) => `${value}%`);
+	}
+
+	function keepPercentChoices(predicate: (value: number) => boolean) {
+		return [5, 10, 15, 20, 25].filter(predicate).map((value) => `${value}%`);
 	}
 
 	async function openSettingsMenu(
@@ -128,20 +139,14 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 			} else if (choice.startsWith("Trigger threshold:")) {
 				const trigger = await ctx.ui.select(
 					"Trigger when context reaches",
-					percentChoices(
-						config.triggerAtPercent,
-						(value) => value > draft.keepRecentPercent,
-					),
+					triggerPercentChoices((value) => value > draft.keepRecentPercent),
 				);
 				if (!trigger) continue;
 				draft.triggerAtPercent = Number.parseInt(trigger, 10);
 			} else if (choice.startsWith("Keep after handoff:")) {
 				const keep = await ctx.ui.select(
 					"Keep recent context after handoff",
-					percentChoices(
-						config.keepRecentPercent,
-						(value) => value < draft.triggerAtPercent,
-					),
+					keepPercentChoices((value) => value < draft.triggerAtPercent),
 				);
 				if (!keep) continue;
 				draft.keepRecentPercent = Number.parseInt(keep, 10);
@@ -209,12 +214,7 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 				"warning",
 			);
 		}
-		notifyStatus(
-			ctx,
-			config.enabled
-				? `${PRODUCT_NAME}: enabled · trigger ${config.triggerAtPercent}% · keep ${config.keepRecentPercent}%.`
-				: `${PRODUCT_NAME}: disabled by configuration.`,
-		);
+		notifyStatus(ctx, statusHeadlineForConfig(config));
 	});
 
 	pi.on("turn_end", async (_event, ctx) => {
@@ -284,21 +284,21 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 
 			if (subcommand === "checkpoint") {
 				if (!config.trusted) {
-					notifyStatus(
+					showCommandOutput(
 						ctx,
 						`${PRODUCT_NAME}: checkpoint disabled because project is not trusted. Config path: ${config.configPath}.`,
 					);
 					return;
 				}
 				if (!config.valid) {
-					notifyStatus(
+					showCommandOutput(
 						ctx,
 						`${PRODUCT_NAME} disabled: invalid configuration in ${config.configPath}.`,
 					);
 					return;
 				}
 				if (!config.enabled) {
-					notifyStatus(ctx, `${PRODUCT_NAME}: disabled by configuration.`);
+					showCommandOutput(ctx, `${PRODUCT_NAME}: disabled by configuration.`);
 					return;
 				}
 				await runContinuityHandoff(pi, ctx, config, state, {
@@ -308,7 +308,7 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 				return;
 			}
 
-			notifyStatus(
+			showCommandOutput(
 				ctx,
 				`${PRODUCT_NAME}: unknown subcommand '${subcommand}'. Use /continuity status, /continuity checkpoint, or /continuity settings.`,
 			);
