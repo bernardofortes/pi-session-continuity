@@ -49,7 +49,7 @@ pi install npm:pi-session-continuity
 Pinned GitHub install:
 
 ```bash
-pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0
+pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.1
 ```
 
 For local development only:
@@ -92,7 +92,7 @@ Defaults:
 ```json
 {
   "enabled": true,
-  "triggerAtPercent": 75,
+  "triggerAtPercent": 70,
   "keepRecentPercent": 20,
   "synthesisModel": "inherit",
   "synthesisEffort": "medium",
@@ -103,6 +103,22 @@ Defaults:
 `synthesisEffort` controls Continuity Brief synthesis reasoning/thinking level and accepts `inherit`, `minimal`, `low`, `medium`, `high`, or `xhigh`. `artifactDirectory` resolves under `<workspace>/<CONFIG_DIR_NAME>/` unless absolute. Invalid config disables automatic behavior and reports the config path.
 
 In interactive Pi sessions, `/continuity settings` can update this file for the public config fields. In non-interactive contexts, edit the JSON directly or run `/continuity settings` for textual inspection.
+
+### Native Pi auto-compaction
+
+Pi native auto-compaction is enabled by default. When Pi Session Continuity automatic behavior is enabled, the package warns on session load if native Pi auto-compaction is still enabled because both systems can compete near the same context threshold.
+
+Recommended project-local Pi setting:
+
+```json
+{
+  "compaction": {
+    "enabled": false
+  }
+}
+```
+
+Save that in `<workspace>/<CONFIG_DIR_NAME>/settings.json` (normally `.pi/settings.json`). Pi Session Continuity does not change this setting automatically during install or load.
 
 ## Artifact layout
 
@@ -136,7 +152,7 @@ npm pack --dry-run
 
 `npm run smoke:manual` prints a checklist template for the required clean Pi smoke assertions. The checklist must be executed from a clean Pi install pinned to a GitHub ref before public announcement. Record the Pi version, Node version, OS, install command, smoke transcript, and resulting artifact path.
 
-External validation commands such as `pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0`, git tags, releases, npm publishing, or uploads require separate explicit human approval.
+External validation commands such as `pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.1`, git tags, releases, npm publishing, or uploads require separate explicit human approval.
 
 ## Known limitations in v0.1.0
 
@@ -152,6 +168,7 @@ External validation commands such as `pi install git:github.com/bernardofortes/p
 - Synthesis failure: no resume prompt is queued; inspect the failed artifact path if one was written.
 - Write failure: no resume prompt is queued; fix filesystem permissions or artifact path.
 - Stale pending artifact: `/continuity status` reports it as inert; v0.1.0 will not silently inject it after reload.
+- Native Pi auto-compaction warning: add project-local Pi settings with `compaction.enabled=false` if Pi Session Continuity should own automatic threshold handoffs. Manual `/compact` remains available.
 - Untrusted project: trust the project before relying on project-local config or automatic behavior.
 
 ## Update / uninstall
@@ -161,7 +178,7 @@ pi update --extension npm:pi-session-continuity
 pi remove npm:pi-session-continuity
 
 # For pinned GitHub installs:
-pi update --extension git:github.com/bernardofortes/pi-session-continuity@v0.1.0
+pi update --extension git:github.com/bernardofortes/pi-session-continuity@v0.1.1
 pi remove git:github.com/bernardofortes/pi-session-continuity
 ```
 

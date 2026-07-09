@@ -5,6 +5,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import {
+	detectNativeAutoCompaction,
 	loadConfig,
 	publicConfigFromResolved,
 	validateConfigDraftForPath,
@@ -71,6 +72,22 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 	): Promise<ResolvedContinuityConfig> {
 		currentConfig = await loadConfig(ctx, CONFIG_DIR_NAME);
 		return currentConfig;
+	}
+
+	function warnIfNativeAutoCompactionEnabled(
+		ctx: ExtensionContext,
+		config: ResolvedContinuityConfig,
+	): void {
+		if (!config.enabled || !config.valid || !config.trusted) return;
+		const nativeCompaction = detectNativeAutoCompaction(
+			ctx.cwd,
+			config.trusted,
+		);
+		if (!nativeCompaction.enabled) return;
+		ctx.ui.notify(
+			`${PRODUCT_NAME} warning: native Pi auto-compaction is still enabled and can compete with Continuity Handoff triggers. Recommended project setting: compaction.enabled=false in ${CONFIG_DIR_NAME}/settings.json.`,
+			"warning",
+		);
 	}
 
 	async function saveConfigDraft(
@@ -214,6 +231,7 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 				"warning",
 			);
 		}
+		warnIfNativeAutoCompactionEnabled(ctx, config);
 		notifyStatus(ctx, statusHeadlineForConfig(config));
 	});
 

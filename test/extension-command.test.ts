@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,12 +15,19 @@ type CommandHandler = (
 	ctx: ExtensionContext,
 ) => Promise<void> | void;
 
+type EventHandler = (
+	event: unknown,
+	ctx: ExtensionContext,
+) => Promise<void> | void;
+
 function fakePi(): {
 	pi: ExtensionAPI;
 	sendMessage: ReturnType<typeof vi.fn>;
 	commandHandler: () => CommandHandler;
+	eventHandler: (name: string) => EventHandler;
 } {
 	let handler: CommandHandler | undefined;
+	const eventHandlers = new Map<string, EventHandler>();
 	const sendMessage = vi.fn();
 	const pi = {
 		registerMessageRenderer: vi.fn(),
@@ -29,7 +36,9 @@ function fakePi(): {
 				handler = options.handler;
 			},
 		),
-		on: vi.fn(),
+		on: vi.fn((name: string, eventHandler: EventHandler) => {
+			eventHandlers.set(name, eventHandler);
+		}),
 		sendMessage,
 		sendUserMessage: vi.fn(),
 	} as unknown as ExtensionAPI;
@@ -40,6 +49,11 @@ function fakePi(): {
 			if (!handler) throw new Error("continuity command was not registered");
 			return handler;
 		},
+		eventHandler: (name: string) => {
+			const eventHandler = eventHandlers.get(name);
+			if (!eventHandler) throw new Error(`${name} handler was not registered`);
+			return eventHandler;
+		},
 	};
 }
 
@@ -47,6 +61,7 @@ function fakeCtx(): ExtensionContext & {
 	ui: ExtensionContext["ui"] & {
 		select: ReturnType<typeof vi.fn>;
 		setStatus: ReturnType<typeof vi.fn>;
+		setWidget: ReturnType<typeof vi.fn>;
 	};
 } {
 	return {
@@ -57,10 +72,12 @@ function fakeCtx(): ExtensionContext & {
 		ui: {
 			notify: vi.fn(),
 			setStatus: vi.fn(),
+			setWidget: vi.fn(),
 			select: vi.fn(async () => "Done"),
 		} as unknown as ExtensionContext["ui"] & {
 			select: ReturnType<typeof vi.fn>;
 			setStatus: ReturnType<typeof vi.fn>;
+			setWidget: ReturnType<typeof vi.fn>;
 		},
 		sessionManager: {
 			getSessionId: () => "session-a",
@@ -69,6 +86,7 @@ function fakeCtx(): ExtensionContext & {
 		ui: ExtensionContext["ui"] & {
 			select: ReturnType<typeof vi.fn>;
 			setStatus: ReturnType<typeof vi.fn>;
+			setWidget: ReturnType<typeof vi.fn>;
 		};
 	};
 }
@@ -101,7 +119,7 @@ describe("continuity command dispatch", () => {
 		sessionContinuityExtension(runtime.pi);
 		const ctx = fakeCtx();
 		ctx.ui.select
-			.mockResolvedValueOnce("Trigger threshold: 75%")
+			.mockResolvedValueOnce("Trigger threshold: 70%")
 			.mockResolvedValueOnce("80%")
 			.mockResolvedValueOnce("Done");
 
@@ -176,5 +194,28 @@ describe("continuity command dispatch", () => {
 		} finally {
 			write.mockRestore();
 		}
+	});
+
+	it("warns on session load when native Pi auto-compaction is enabled", async () => {
+		await mkdir(join(dir, ".pi"), { recursive: true });
+		await writeFile(
+			join(dir, ".pi", "settings.json"),
+			JSON.stringify({ compaction: { enabled: true } }),
+			"utf8",
+		);
+		const runtime = fakePi();
+		sessionContinuityExtension(runtime.pi);
+		const ctx = fakeCtx();
+
+		await runtime.eventHandler("session_start")({}, ctx);
+
+		expect(ctx.ui.notify).toHaveBeenCalledWith(
+			expect.stringContaining("native Pi auto-compaction is still enabled"),
+			"warning",
+		);
+		expect(ctx.ui.notify).toHaveBeenCalledWith(
+			expect.stringContaining("compaction.enabled=false"),
+			"warning",
+		);
 	});
 });

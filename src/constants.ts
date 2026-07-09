@@ -56,7 +56,7 @@ export const ALLOWED_STATUSES = [
 	"failed",
 ] as const;
 
-export const DEFAULT_TRIGGER_AT_PERCENT = 75;
+export const DEFAULT_TRIGGER_AT_PERCENT = 70;
 export const DEFAULT_KEEP_RECENT_PERCENT = 20;
 export const DEFAULT_ARTIFACT_DIRECTORY = "session-continuity";
 export const DEFAULT_SYNTHESIS_MODEL = "inherit";

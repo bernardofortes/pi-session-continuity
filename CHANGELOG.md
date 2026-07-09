@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 — 2026-07-09
+
+- Change the default automatic threshold from 75% to 70% to reduce immediate contention with Pi native auto-compaction thresholds.
+- Warn on session load when native Pi auto-compaction is still enabled while Pi Session Continuity automatic behavior is enabled.
+- Document the recommended project-local Pi setting `compaction.enabled=false` for projects that want Pi Session Continuity to own automatic handoffs.
+
 ## 0.1.0 — 2026-07-09
 
 - Add Pi package manifest for `pi-session-continuity`.

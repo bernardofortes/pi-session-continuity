@@ -66,10 +66,10 @@ describe("status and stale pending artifacts", () => {
 		const enabled = await loadConfigFromDisk(dir, ".pi", true);
 		const enabledStatus = formatStatus(enabled, createHandoffState());
 		expect(enabledStatus).toContain(
-			"Pi Session Continuity: enabled · trigger 75% · keep 20%.",
+			"Pi Session Continuity: enabled · trigger 70% · keep 20%.",
 		);
 		expect(enabledStatus).toContain(
-			"Trigger threshold: 75% of the active context window",
+			"Trigger threshold: 70% of the active context window",
 		);
 		expect(enabledStatus).toContain("Keep after handoff: 20%");
 		expectStatusPanelFields(enabledStatus);
@@ -85,7 +85,7 @@ describe("status and stale pending artifacts", () => {
 		expect(disabledStatus).toContain(
 			"Pi Session Continuity: disabled by configuration.",
 		);
-		expect(disabledStatus).toContain("Trigger threshold: 75%");
+		expect(disabledStatus).toContain("Trigger threshold: 70%");
 		expect(disabledStatus).toContain("Keep after handoff: 20%");
 		expectStatusPanelFields(disabledStatus);
 	});
@@ -138,9 +138,9 @@ describe("status and stale pending artifacts", () => {
 	it("keeps footer status compact instead of repeating detailed panels", () => {
 		expect(
 			footerStatusForMessage(
-				"Pi Session Continuity: enabled · trigger 75% · keep 20%.",
+				"Pi Session Continuity: enabled · trigger 70% · keep 20%.",
 			),
-		).toBe("Session Continuation @ 75%");
+		).toBe("Session Continuation @ 70%");
 		expect(
 			footerStatusForMessage("Pi Session Continuity: settings\nConfig"),
 		).toBe("PSC settings");

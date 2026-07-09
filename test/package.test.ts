@@ -15,7 +15,7 @@ const requiredSmokeAssertions = [
 
 const requiredReadmePhrases = [
 	"pi install npm:pi-session-continuity",
-	"pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0",
+	"pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.1",
 	"/continuity status",
 	"/continuity checkpoint",
 	"/continuity settings",

@@ -1,7 +1,11 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
-import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
+import {
+	getAgentDir,
+	SettingsManager,
+	type ExtensionContext,
+} from "@earendil-works/pi-coding-agent";
 import {
 	DEFAULT_ARTIFACT_DIRECTORY,
 	DEFAULT_KEEP_RECENT_PERCENT,
@@ -33,6 +37,13 @@ export interface ResolvedContinuityConfig extends ContinuityConfig {
 	trusted: boolean;
 	valid: boolean;
 	disabledReason?: string;
+	errors: string[];
+}
+
+export interface NativeCompactionStatus {
+	enabled: boolean;
+	reserveTokens: number;
+	keepRecentTokens: number;
 	errors: string[];
 }
 
@@ -334,6 +345,26 @@ export async function loadConfig(
 	configDirName: string,
 ): Promise<ResolvedContinuityConfig> {
 	return loadConfigFromDisk(ctx.cwd, configDirName, ctx.isProjectTrusted());
+}
+
+export function detectNativeAutoCompaction(
+	cwd: string,
+	projectTrusted: boolean,
+	agentDir = getAgentDir(),
+): NativeCompactionStatus {
+	const settingsManager = SettingsManager.create(cwd, agentDir, {
+		projectTrusted,
+	});
+	const settings = settingsManager.getCompactionSettings();
+	const errors = settingsManager
+		.drainErrors()
+		.map(({ scope, error }) => `${scope}: ${error.message}`);
+	return {
+		enabled: settings.enabled,
+		reserveTokens: settings.reserveTokens,
+		keepRecentTokens: settings.keepRecentTokens,
+		errors,
+	};
 }
 
 export function deriveKeepRecentTokens(
