@@ -90,6 +90,8 @@ Default threshold config:
 
 v0.1.0 may request native Pi compaction as token hygiene only after the Continuity Brief has been written. It must not treat native compaction proof as the source of continuity.
 
+Continuity Brief synthesis must reserve enough output budget for reasoning-capable models so effort tokens do not starve the final Markdown body. If threshold-triggered synthesis fails, automatic behavior should not retry on every subsequent turn; it should cool down and leave manual `/continuity checkpoint` available.
+
 ### v0.2+: later enhancements
 
 Deferred enhancements may include:
@@ -109,6 +111,7 @@ Configuration should stay small for v0.1.0:
   "triggerAtPercent": 65,
   "keepRecentPercent": 15,
   "synthesisModel": "inherit",
+  "synthesisEffort": "medium",
   "artifactDirectory": "session-continuity"
 }
 ```
@@ -121,6 +124,7 @@ Rules:
 - `keepRecentPercent` must be lower than `triggerAtPercent`.
 - `synthesisModel` is either `"inherit"` or a concrete Pi model id such as `provider/model`.
 - `"inherit"` means the active Pi model is used for synthesis. The settings UI should warn that this can spend context/output budget near the trigger threshold; users may pin a cheaper or larger-context synthesis model.
+- `synthesisEffort` controls reasoning/thinking effort for Continuity Brief synthesis. It uses the same effort labels as Pi model effort selection: `"inherit"`, `"minimal"`, `"low"`, `"medium"`, `"high"`, or `"xhigh"`; the default is `"medium"`.
 - The public v0.1.0 config file is project-local: `<workspace>/<CONFIG_DIR_NAME>/session-continuity.json`, where `CONFIG_DIR_NAME` comes from `@earendil-works/pi-coding-agent` and is normally `.pi`.
 - The implementation must use `CONFIG_DIR_NAME`; it must not hardcode `.pi` internally.
 - Project-local config may be read only when `ctx.isProjectTrusted()` is true. In an untrusted project, automatic behavior is disabled and commands report the trust/config reason.
@@ -183,6 +187,7 @@ createdAt: "ISO-8601 timestamp"
 updatedAt: "ISO-8601 timestamp"
 modelId: "active-provider/model"
 synthesisModel: "resolved-provider/model"
+synthesisEffort: "medium"
 tokenCountAtTrigger: 0
 contextWindow: 0
 triggerAtPercent: 65
@@ -206,6 +211,7 @@ Required fields:
 - `updatedAt`
 - `modelId`
 - `synthesisModel`
+- `synthesisEffort`
 - `tokenCountAtTrigger`
 - `contextWindow`
 - `triggerAtPercent`
@@ -317,9 +323,11 @@ You are continuing after a Pi Session Continuity handoff. The Continuity Brief a
 
 The injected prompt must include the saved Continuity Brief content read from disk. The prompt must be queued only after the artifact has been written successfully and validated against the mandatory heading contract.
 
-## 11. User-facing status sentences
+## 11. User-facing status and settings UX
 
-All user-visible messages should be short, verifiable, and product-prefixed.
+All user-visible messages should be short, verifiable, and product-prefixed. In interactive Pi TUI mode, detailed `/continuity status` and `/continuity settings` output should be rendered as intentional user-facing output, not as a persistent oversized widget or long background/internal-looking chatter. Notifications should not escalate to warning severity unless the headline is actually disabled, invalid, failed, or otherwise unsafe.
+
+The output should use human-readable labels only for the normal status panel. Do not repeat the same values in a separate diagnostics block; concrete paths that matter to the user, such as the artifact directory or last artifact path, should appear once in the main panel. Persistent footer/status-line text should stay compact, for example `PSC 75/15`, so it does not crowd the terminal footer.
 
 Idle/enabled:
 
@@ -412,12 +420,13 @@ Deferred:
 
 ### `/continuity status`
 
-Shows:
+Shows a human-readable status panel or textual fallback with:
 
 - enabled/disabled
 - trigger percent
 - keep recent percent
 - synthesis model
+- synthesis effort
 - artifact directory
 - current active operation
 - last checkpoint timestamp
@@ -425,21 +434,26 @@ Shows:
 - last failure, if any
 - stale same-session pending artifact path, if any
 
+The status output should remain inspectable in non-interactive modes, but in TUI mode it should look like deliberate user feedback rather than model thinking or extension debug chatter.
+
 ### `/continuity checkpoint`
 
 Manual checkpoint. In v0/v0.1.0 this is a full Continuity Handoff: it must synthesize, validate, and write a Continuity Brief, then queue the resume prompt from the saved disk artifact. A write-only or dry-run checkpoint mode is deferred until a separate public config or command is specified.
 
 ### `/continuity settings`
 
-Simple menu for the public v0.1.0 config fields:
+In interactive Pi contexts, opens a simple navigable menu for the public v0.1.0 config fields and persists changes to the project-local config file:
 
 - enabled
 - trigger percent
 - keep recent percent
 - synthesis model
+- synthesis effort
 - artifact directory
 
-Internal constants are not shown in this menu unless promoted to public config later.
+The same `/continuity settings` command falls back to textual output in non-interactive contexts. In interactive TUI use, the menu itself is the settings view; do not add a separate `show` item that dumps settings like model output.
+
+When a setting changes, the extension reloads and validates the config. Invalid edits must fail visibly and should not leave automatic behavior silently enabled with invalid state. Internal constants are not shown in this menu unless promoted to public config later.
 
 ## 13. Trigger behavior and single-flight
 
@@ -559,7 +573,7 @@ Required `package.json` shape:
   "license": "MIT",
   "type": "module",
   "keywords": ["pi-package", "pi-extension", "session-continuity", "continuity"],
-  "files": ["extensions", "src", "docs", "README.md", "LICENSE", "CHANGELOG.md"],
+  "files": ["extensions", "src", "docs", "scripts", "README.md", "LICENSE", "CHANGELOG.md"],
   "pi": {
     "extensions": ["./extensions/session-continuity/index.ts"]
   },

@@ -1,0 +1,8 @@
+schema: specforge.decision-log.v0
+scope_id: SCOPE-0005
+decisions:
+- id: D-001
+  decision: Use a pure helper for automatic trigger decisions
+  rationale: Makes turn_end threshold behavior unit-testable without Pi harness smoke.
+timestamps:
+  created_at: '2026-07-07T17:29:25.576611Z'

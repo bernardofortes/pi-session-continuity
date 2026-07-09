@@ -1,0 +1,457 @@
+schema: specforge.autonomous.implementation-packet.v0
+status: ready
+specforge:
+  scope_id: SCOPE-0001
+  run_id: RUN-0001
+  artifact_root: specforge/
+  packet_path: specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+  compatibility_warnings: []
+export_kit:
+  contract_version: '0.9'
+  producer:
+    kind: claude_skill
+    name: specforge-mini-1-elicit-fallback
+    version: 0.9.1
+  consumer:
+    kind: claude_skill
+    name: specforge-mini-2-implement-fallback
+    minimum_version: 0.9.0
+  implementation_route: mini_only
+  contract_ref: skills/specforge-mini-1-elicit-fallback/references/export-kit-contract-v0.9.md
+  serialization:
+    format: yaml
+    must_parse_with: yaml.safe_load
+    free_text_policy: block_scalar_or_escaped
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+change_class:
+  size: medium
+  risk: normal
+  surface:
+  - infra
+  - docs
+  complexity_track: normal-complex
+  escalation_triggers:
+  - new public API contract decision
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+risk_class: normal
+risk_floor: normal
+rigor_mode: normal
+writer_strategy: inline
+diff_scope:
+  allowed_files_or_areas:
+  - package.json
+  - tsconfig.json
+  - README.md
+  - LICENSE
+  - CHANGELOG.md
+  - extensions/session-continuity/
+  - src/
+  - test/
+  - scripts/smoke/
+  - docs/deploys/
+  - specforge/scopes/SCOPE-0001/
+  - specforge/runs/RUN-0001/
+  - .orchestrate/campaigns/pi-session-continuity-v1/episodes/EPN-0001-package-skeleton/
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+  - .gitignore
+  - .orchestrate/
+  - extensions/
+  - scripts/
+  - specforge/
+  - package-lock.json
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - .git/
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+evidence_plan:
+  surfaces:
+  - package metadata
+  - extension entrypoint
+  - core artifact/config logic
+  - tests
+  - documentation
+  required:
+  - kind: command
+    command: npm test
+    proves: unit tests for skeleton/core contracts pass
+  - kind: command
+    command: npm run typecheck
+    proves: TypeScript compiles
+  - kind: command
+    command: npm pack --dry-run
+    proves: package contents match public package shape
+  optional:
+  - manual Pi smoke deferred until explicit install approval
+  known_answer_cases:
+  - product code must not contain loop/campaign/episode concepts
+  - package must expose extensions/session-continuity/index.ts
+  unavailable_or_human_only:
+  - clean GitHub-ref install smoke requires external publication approval and is deferred
+review_budget:
+  max_review_rounds: 2
+  max_repair_rounds: 2
+  requires_fresh_review: false
+  requires_specialized_review: false
+  self_check_allowed: true
+documentation_policy:
+  deploy_note_required: true
+  target_lines: 20-40
+  include_operational_risks: true
+execution_environment_policy:
+  preferred_mode: source_worktree
+  clean_execution_required: false
+  source_dirty_allowed: true
+  copy_back_allowed: false
+copy_back_policy:
+  required: false
+  allowed: false
+  target_paths: []
+  requires_reconciliation: true
+environment_prerequisites:
+  commands:
+  - node
+  - npm
+  services: []
+  fixtures: []
+  generated_tools: []
+validator_expectations:
+  pre_edit_required: true
+  post_slice_required: true
+  warning_policy: explicit_rationale_required
+routing_hints:
+  prompt_contracts: {}
+  tools:
+    implementation: single writer in source worktree; no external mutation
+  model_routing: {}
+context_sources:
+- id: product-spec
+  kind: product_contract
+  tool: read
+  artifact_ref: docs/product-spec.md
+  capabilities:
+  - package_contract
+  - artifact_contract
+  - validation_policy
+  source_commit: null
+  watched_paths:
+  - docs/product-spec.md
+  freshness:
+    status: fresh
+    checked_at: '2026-07-07'
+  required: true
+waivers: []
+execution_metadata:
+  produced_by:
+    skill: specforge-mini-1-elicit-fallback
+    model: null
+    session_id: null
+  token_usage:
+    input_tokens: null
+    output_tokens: null
+    total_tokens: null
+  cost:
+    currency: USD
+    estimated: null
+  timestamps:
+    started_at: '2026-07-07T16:03:32.298223Z'
+    finished_at: '2026-07-07T16:03:32.298235Z'
+project_context:
+  architecture_refs: []
+  agent_guidance_refs:
+  - AGENTS.md
+  tooling_refs:
+  - docs/product-spec.md
+  - Pi docs/extensions.md
+  - Pi docs/packages.md
+  - Pi docs/compaction.md
+  - Pi docs/sessions.md
+  inspected_refs:
+  - docs/product-spec.md
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+  missing_expected_refs:
+  - ARCHITECTURE.md
+  - docs/architecture.md
+architecture_context:
+  status: missing
+  primary_ref: null
+  supporting_refs:
+  - docs/product-spec.md
+  drift_check_required: false
+  notes:
+  - Low-risk absence accepted for initial Pi package skeleton; product spec is source
+    of truth.
+mini_anchor:
+  original_intent: Bootstrap and begin implementing Pi Session Continuity package
+    under the campaign-approved SpecForge Mini fallback route.
+  success_minimum:
+  - package skeleton exists
+  - extension entrypoint exists
+  - core contract helpers and tests exist
+  - local validation gates attempted and recorded
+  non_goals:
+  - external install
+  - git push/tag/release
+  - npm publish
+  - active Pi harness install
+  - product scope change beyond docs/product-spec.md
+  invariants:
+  - Durable Continuity Brief first
+  - resume prompt from disk artifact
+  - compaction only after safe artifact/resume path
+  - no campaign terminology in product runtime strings
+  allowed_scope:
+  - package skeleton
+  - extension entrypoint
+  - core source
+  - tests
+  - smoke script placeholders
+  - README/CHANGELOG/LICENSE
+  - SpecForge run evidence
+  drift_risks:
+  - accidentally encoding campaign concepts into product code
+  - claiming release readiness without clean install smoke
+  stop_conditions:
+  - external mutation required
+  - product contract ambiguity requiring Bernardo decision
+  - validation gate cannot be made runnable locally
+mini_slice:
+  id: slice-001
+  smallest_e2e_proof: A local Pi package skeleton with first core implementation can
+    be typechecked, tested, and packed without external mutation.
+  observable_behavior:
+  - /continuity command namespace is registered by entrypoint
+  - core helpers write/validate Continuity Briefs and prepare disk-backed resume prompts
+    in tests
+  allowed_files_or_areas:
+  - package.json
+  - tsconfig.json
+  - README.md
+  - LICENSE
+  - CHANGELOG.md
+  - extensions/session-continuity/
+  - src/
+  - test/
+  - scripts/smoke/
+  - docs/deploys/
+  - specforge/runs/RUN-0001/
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - .git/
+  required_evidence:
+  - kind: command
+    command: npm test
+    path: null
+    check: tests pass
+    required: true
+    proves: local behavior contracts are covered
+  - kind: command
+    command: npm run typecheck
+    path: null
+    check: typecheck passes
+    required: true
+    proves: package compiles
+  - kind: command
+    command: npm pack --dry-run
+    path: null
+    check: dry run succeeds
+    required: true
+    proves: package can be packed
+  observable_outcome_hints:
+    applies: true
+    trigger_reason: operator-visible package commands and artifacts
+    primary_scenario: Run local validation gates and inspect package contents
+    artifact_kind: cli_output
+    suggested_artifacts:
+    - specforge/runs/RUN-0001/commands/
+    spec_refs:
+    - docs/product-spec.md sections 15-20
+    spec_conformance_checks:
+    - required layout exists
+    - package pi manifest references extension entrypoint
+    - quality gate scripts exist and run
+    - public docs and license exist
+    sanity_checks:
+    - no external mutation
+    - artifact/resume invariant represented in tests
+    reviewer_needed: false
+  optional_evidence: []
+  what_not_to_do:
+  - Do not run pi install
+  - Do not publish or push
+  - Do not modify product spec
+  budget:
+    max_files_changed: 30
+    max_new_files: 25
+    max_new_abstractions: 8
+    max_runtime_minutes: 60
+    max_review_rounds: 2
+    max_docs_pages: 4
+    allowed_tool_classes:
+    - read
+    - write
+    - edit
+    - bash
+    - ctx_execute
+    - subagent reviewer if needed
+turnkey_gap_review:
+  status: clean
+  mode: self_check
+  reviewer_metadata: null
+  actors:
+  - Pi user
+  - future package maintainer
+  primary_flows:
+  - install package then use /continuity status/checkpoint/settings
+  - local developer runs npm test/typecheck/pack
+  intent_coverage:
+  - requested_capability: start building under campaign autonomy
+    source_ref: user 2026-07-07
+    disposition: in_slice
+    slice_ref: slice-001
+    defer_ref: null
+    evidence_refs:
+    - campaign-ledger.md
+  - requested_capability: use Telegram as defined by campaign skill
+    source_ref: user 2026-07-07
+    disposition: in_slice
+    slice_ref: slice-001
+    defer_ref: null
+    evidence_refs:
+    - campaign-ledger.md
+  usage_walkthrough:
+  - step: Run /continuity status in loaded package
+    expected: reports enabled/disabled/config state
+    gap: null
+    disposition: satisfied
+  - step: Run local validation
+    expected: npm scripts execute
+    gap: null
+    disposition: satisfied
+  ux_gaps: []
+  functional_gaps: []
+  permission_gaps: []
+  success_error_state_gaps: []
+  architecture_gaps: []
+  evidence_gaps: []
+  unresolved_gaps: []
+  findings: []
+risk_classification:
+  risk_class: normal
+  risk_floor: normal
+  selected_rigor_mode: normal
+  writer_strategy: inline
+  risk_level: medium
+  signals:
+    api_contract: true
+    generated_artifacts: false
+    source_of_truth: false
+    persistence: true
+    migrations: false
+    auth_security: false
+    frontend_backend_boundary: false
+    forbidden_patterns: false
+    watched_paths_changed_since_context: false
+    required_context_source_stale_or_missing: false
+    multi_slice: false
+    critical_domain: false
+    architecture_context_missing_or_stale: false
+    non_linear_dependencies: false
+  rationale: Pi extension package touches runtime APIs and disk artifacts, but no
+    external mutation or data migration.
+autonomy:
+  mode: single-slice
+  max_slices: 1
+  total_budget:
+    max_files_changed: 30
+    max_runtime_minutes: 60
+    max_review_rounds_total: 2
+  continuation_slices: []
+  stop_before_start_when:
+  - working tree has overlapping product edits by another writer
+  stop_before_next_when:
+  - not applicable
+review_plan:
+  validation_commands:
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+  judge_focus:
+  - behavior
+  - evidence
+  - anchor_adherence
+  - slice_adherence
+  observable_outcome_review:
+    needed: true
+    reason: CLI/package output is operator-visible
+    expected_artifact_kind: cli_output
+    spec_refs:
+    - docs/product-spec.md
+    suggested_spec_conformance_checks:
+    - package layout and scripts match spec
+  simplify_focus:
+  - overengineering
+  - scope_invented
+  - premature_abstractions
+  - configuration_bloat
+  - documentation_bloat
+  subagent_review_needed: false
+  architecture_review_needed: false
+decision_log:
+- id: D-001
+  kind: user_confirmed
+  decision: Use campaign conductor and SpecForge Mini fallback route for implementation
+    cycles.
+  rationale: User approved this route and ledger records it.
+  evidence_refs:
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+- id: D-002
+  kind: project_convention
+  decision: External install/tag/release/publish remain forbidden without explicit
+    approval.
+  rationale: Product spec and AGENTS require human approval.
+  evidence_refs:
+  - docs/product-spec.md
+  - AGENTS.md
+dependencies:
+  blocking: []
+  non_blocking:
+  - clean GitHub install smoke deferred
+  mock_or_defer_strategy:
+  - unit tests use fake Pi contexts for extension behavior
+decision_policy:
+  stop_when:
+  - required commands pass or any failure is clearly recorded as blocking
+  repair_when:
+  - tests/typecheck fail due implementation
+  simplify_when:
+  - review finds overengineering
+  next_slice_when: []
+  human_when:
+  - external mutation or product scope decision required
+  abandon_when:
+  - packet invalid or product spec conflict discovered
+handoff:
+  recommended_next_action: implement
+  implementation_baton:
+    skill: specforge-mini-2-implement-fallback
+    packet_path: specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+    instruction: Invoke specforge-mini-2-implement-fallback with this persisted packet
+      path; do not implement manually from the elicitation session.
+  options: []
+  operator_notes:
+  - No Pi install or external mutation in this scope.

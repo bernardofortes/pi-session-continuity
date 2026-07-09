@@ -1,0 +1,33 @@
+status: pass
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0009
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0009/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: pass
+  validator: scope_gate
+  findings: []
+- status: pass
+  validator: change_classification
+  findings: []
+- status: pass
+  validator: evidence_matrix
+  findings: []
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: pass
+  validator: review_budget
+  findings: []
+- status: pass
+  validator: tool_routing
+  findings: []
+summary:
+  pass: 7
+  warning: 0
+  fail: 0
+  blocked: 0

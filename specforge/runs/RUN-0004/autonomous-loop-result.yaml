@@ -1,0 +1,108 @@
+autonomous_loop_result:
+  schema: specforge.autonomous.loop-result.v0
+  status: completed
+  scope_id: SCOPE-0004
+  run_id: RUN-0004
+  packet_ref: specforge/scopes/SCOPE-0004/autonomous-implementation-packet.yaml
+  deploy_note_ref: docs/deploys/deploy-2026-07-07-SCOPE-0004-status-settings.md
+  deploy_index_ref: docs/deploys/README.md
+  autonomy:
+    mode: single-slice
+    slices_planned: 1
+    slices_completed: 1
+    stopped_early: false
+    stop_reason: null
+  final_decision: stop
+  slice_results:
+  - slice_id: slice-001
+    decision: stop
+    judge: pass
+    simplify: pass
+  command_refs:
+  - CMD-0005
+  - CMD-0006
+  - CMD-0007
+  required_evidence_reconciliation:
+  - packet_item_ref: mini_slice.required_evidence[0]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0005
+    rationale: 'npm test passed: 4 files, 31 tests'
+  - packet_item_ref: mini_slice.required_evidence[1]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0006
+    rationale: typecheck passed
+  - packet_item_ref: mini_slice.required_evidence[2]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0007
+    rationale: pack dry-run passed
+  - packet_item_ref: mini_slice.required_evidence[3]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: specforge/runs/RUN-0004/subagents/JUDGE-0002.md
+    rationale: fresh delta reviewer passed with no blockers/majors/minors
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: test/status.test.ts
+    rationale: status reports untrusted and invalid config explicitly; covered by
+      test/status.test.ts
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: test/status.test.ts
+    rationale: settings reports all public config fields; covered by test/status.test.ts
+  authoritative_command_refs:
+  - CMD-0005
+  - CMD-0006
+  - CMD-0007
+  superseded_command_refs:
+  - CMD-0002
+  - CMD-0003
+  - CMD-0004
+  flow_metrics:
+    review_rounds: 2
+    judge_rounds: 2
+    simplify_rounds: 0
+    repair_rounds: 1
+    commands_run: 7
+    expensive_commands_run: 6
+    subagent_artifacts: 2
+    elapsed_minutes: 25
+    budget_extensions: 0
+    product_repairs_after_pass: 1
+  residual_risks:
+  - Live Pi command rendering remains deferred until external/active harness smoke
+    is approved.
+  validation_summary:
+  - 'npm test passed: 31 tests (CMD-0005)'
+  - npm run typecheck passed (CMD-0006)
+  - npm pack --dry-run passed (CMD-0007)
+  - 'Final judge PASS: JUDGE-0002'
+  - 'SpecForge validator: CMD-0009 pass_with_warning with no fail/block'
+  known_answer_cases:
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    case: status reports untrusted and invalid config explicitly
+    check_ref: test/status.test.ts
+    disposition: satisfied
+    rationale: status reports untrusted and invalid config explicitly; covered by
+      test/status.test.ts
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    case: settings reports all public config fields
+    check_ref: test/status.test.ts
+    disposition: satisfied
+    rationale: settings reports all public config fields; covered by test/status.test.ts
+  unavailable_or_human_only:
+  - packet_item_ref: evidence_plan.unavailable_or_human_only[0]
+    reason: clean GitHub-ref install smoke requires external approval
+    approved_replacement_ref: local npm pack --dry-run
+  finalization_consistency:
+    status: pass
+    findings:
+    - CMD-0009 post validator pass_with_warning; warnings are non-product process
+      warnings covered by JUDGE-0002
+  execution_metadata:
+    timestamps:
+      finished_at: '2026-07-07T17:27:26.608208Z'

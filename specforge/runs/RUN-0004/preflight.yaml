@@ -1,0 +1,41 @@
+schema: specforge.autonomous.preflight.v0
+packet_ref: specforge/scopes/SCOPE-0004/autonomous-implementation-packet.yaml
+run_id: RUN-0004
+slice_id: slice-001
+status: pass
+base_commit: source worktree containing prior local episodes
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - infra
+  complexity_track: normal-small
+  escalation_triggers:
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: false
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+scope_gate:
+  status: pass
+  dirty_allowed_paths:
+  - existing package skeleton and SCOPE-0004 artifacts
+  dirty_forbidden_paths: []
+validator_invocations:
+- phase: pre-edit
+  command: validator subset
+  exit_code: 0
+  status: pass
+  output_ref: specforge/runs/RUN-0004/specforge-mini-validator-report-pre.yaml
+checks:
+  packet_ready: pass
+  scope_explicit: pass
+  evidence_matrix: pass
+warnings: []
+blockers: []
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T17:27:26.608208Z'

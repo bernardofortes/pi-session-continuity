@@ -1,0 +1,11 @@
+schema: specforge.decision-log.v0
+scope_id: SCOPE-0002
+decisions:
+- id: D-001
+  decision: Limit EPN-0002 to artifact/config core hardening
+  rationale: Manual command/threshold/compaction episodes remain separately planned.
+  evidence_refs:
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+  - docs/product-spec.md
+timestamps:
+  created_at: '2026-07-07T17:00:35.278170Z'

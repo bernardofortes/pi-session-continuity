@@ -1,0 +1,83 @@
+status: warning
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0011
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0011/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: warning
+  validator: skill_structural
+  findings:
+  - severity: warning
+    code: skill_path_not_provided
+    evidence: No --skill path was provided.
+    recommended_action: pass --skill to validate SpecForge Mini skill structure
+- status: warning
+  validator: yaml_snippet
+  findings:
+  - severity: warning
+    code: no_snippet_sources
+    evidence: No skill/planning doc supplied for fenced YAML snippet parsing.
+    recommended_action: pass --skill and/or --planning-doc when validating docs
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: pass
+  validator: scope_gate
+  findings: []
+- status: pass
+  validator: change_classification
+  findings: []
+- status: pass
+  validator: evidence_matrix
+  findings: []
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: pass
+  validator: stale_approval
+  findings: []
+- status: pass
+  validator: review_budget
+  findings: []
+- status: pass
+  validator: prompt_contract
+  findings: []
+- status: pass
+  validator: tool_routing
+  findings: []
+- status: pass
+  validator: flow_metrics
+  findings: []
+- status: pass
+  validator: yaml_artifact_parse
+  findings: []
+- status: pass
+  validator: finalization_consistency
+  findings: []
+- status: warning
+  validator: documentation_proportionality
+  findings:
+  - severity: warning
+    code: deploy_note_above_track_target
+    evidence: track=trivial-light, lines=19, target<= 15
+    recommended_action: compress if detail duplicates run artifacts
+    path: docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+  - severity: minor
+    code: deploy_note_logs_not_linked
+    evidence: Deploy note mentions command refs without specforge/runs link.
+    recommended_action: link run artifacts rather than duplicating raw logs
+    path: docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+- status: warning
+  validator: scenario_review
+  findings:
+  - severity: warning
+    code: scenario_review_artifact_missing
+    evidence: No scenario review artifact found in the active run dir.
+    recommended_action: write scenario matrix and independent review before GOAL MET/final
+      stop
+summary:
+  pass: 12
+  warning: 4
+  fail: 0
+  blocked: 0

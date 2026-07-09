@@ -1,0 +1,185 @@
+autonomous_loop_result:
+  schema: specforge.autonomous.loop-result.v0
+  status: completed
+  scope_id: SCOPE-0001
+  run_id: RUN-0001
+  packet_ref: specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+  deploy_note_ref: docs/deploys/deploy-2026-07-07-SCOPE-0001-package-skeleton.md
+  deploy_index_ref: docs/deploys/README.md
+  autonomy:
+    mode: single-slice
+    slices_planned: 1
+    slices_completed: 1
+    stopped_early: false
+    stop_reason: null
+  final_decision: stop
+  slice_results:
+  - slice_id: slice-001
+    decision: stop
+    judge: pass
+    simplify: pass
+  command_refs:
+  - CMD-0014
+  - CMD-0015
+  - CMD-0016
+  required_evidence_reconciliation:
+  - packet_item_ref: mini_slice.required_evidence[0]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0014
+    rationale: 'npm test passed: 4 files, 22 tests'
+  - packet_item_ref: mini_slice.required_evidence[1]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0015
+    rationale: typecheck passed
+  - packet_item_ref: mini_slice.required_evidence[2]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0016
+    rationale: pack dry-run passed
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: specforge/runs/RUN-0001/autonomous-loop-result.yaml
+    rationale: product code must not contain loop/campaign/episode concepts; runtime
+      grep returned no matches
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: package.json
+    rationale: package must expose extensions/session-continuity/index.ts
+  execution_environment:
+    mode: source_worktree
+    source_ref: main working tree
+    source_worktree: /home/ubuntu/pi-session-continuity
+    execution_worktree: /home/ubuntu/pi-session-continuity
+    branch: main
+    execution_status_before_edits: clean_except_process_artifacts
+  working_tree:
+    execution_status: preflight_artifacts_only
+    source_status: dirty_non_overlapping
+    unrelated_dirty_paths: []
+    overlapping_dirty_paths: []
+  execution_readiness:
+    status: ready
+    reason: null
+    blocking_decisions: []
+  copy_back_policy:
+    allowed: false
+    required: false
+    target_paths: []
+    requires_reconciliation: true
+  copy_back_reconciliation:
+    required: false
+    status: not_applicable
+    target_paths: []
+    overlapping_source_dirty_paths: []
+    evidence_refs: []
+  change_class:
+    size: medium
+    risk: normal
+    surface:
+    - infra
+    - docs
+    complexity_track: normal-complex
+    escalation_triggers:
+    - external install/tag/release/publish request
+    needs_worktree: false
+    needs_external_review: false
+    needs_observable_review: true
+    needs_full_validation: true
+    needs_specialized_review: false
+    needs_graph_or_dependency_context: false
+  track_transitions: []
+  authoritative_command_refs:
+  - CMD-0014
+  - CMD-0015
+  - CMD-0016
+  superseded_command_refs:
+  - CMD-0001
+  - CMD-0002
+  - CMD-0003
+  - CMD-0006
+  - CMD-0007
+  - CMD-0008
+  - CMD-0009
+  - CMD-0010
+  - CMD-0011
+  flow_metrics:
+    review_rounds: 2
+    judge_rounds: 2
+    simplify_rounds: 1
+    repair_rounds: 2
+    commands_run: 11
+    expensive_commands_run: 6
+    subagent_artifacts: 3
+    elapsed_minutes: 45
+    budget_extensions: 0
+    product_repairs_after_pass: 3
+  decision_log_updates:
+  - id: D-003
+    supersedes: null
+    decision: Add a local .active lock directory for atomic same-worktree duplicate
+      suppression while preserving per-event lock files.
+    rationale: Per-event unique lock files cannot be atomic single-flight across concurrent
+      event ids by themselves.
+    evidence_refs:
+    - src/handoff.ts
+    - test/handoff.test.ts
+  residual_risks:
+  - Clean Pi install/smoke from a GitHub ref not run; external release/install actions
+    require Bernardo approval.
+  - Directive-promotion detection is heuristic and may be expanded in later hardening.
+  validation_summary:
+  - 'npm test passed: 22 tests (CMD-0014)'
+  - npm run typecheck passed (CMD-0015)
+  - 'npm pack --dry-run passed: 13 files (CMD-0016)'
+  - 'Final judge PASS: JUDGE-0004'
+  - 'SpecForge validator: CMD-0019 pass; CMD-0020 pass_with_warning with no fail/block'
+  known_answer_cases:
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    case: product code must not contain loop/campaign/episode concepts
+    check_ref: runtime grep over src extensions README CHANGELOG package.json
+    disposition: satisfied
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    case: package must expose extensions/session-continuity/index.ts
+    check_ref: package.json pi.extensions plus npm pack contents CMD-0016
+    disposition: satisfied
+  unavailable_or_human_only:
+  - packet_item_ref: evidence_plan.unavailable_or_human_only[0]
+    reason: external GitHub ref validation requires approval
+    approved_replacement_ref: local npm pack --dry-run
+  specialized_review: null
+  observable_outcome_reviews:
+  - applicable: true
+    trigger_reason: operator-visible CLI/package output
+    scenario: Run npm test, typecheck, and npm pack --dry-run
+    artifacts:
+    - CMD-0009
+    - CMD-0010
+    - CMD-0011
+    spec_refs:
+    - docs/product-spec.md sections 15-20
+    spec_conformance_checks:
+    - package layout present
+    - pi manifest references extension entrypoint
+    - quality scripts run
+    - docs/license/changelog present
+    sanity_checks:
+    - no external mutation
+    - runtime source has no campaign terms
+    reviewer:
+      kind: fresh_context_subagent
+      same_as_worker: false
+      artifact_ref: specforge/runs/RUN-0001/subagents/JUDGE-0002.md
+    result: pass
+  finalization_consistency:
+    status: pass
+    findings:
+    - CMD-0019 pre/final validator pass
+    - CMD-0020 post validator pass_with_warning; warnings are non-product process
+      warnings covered by final judge
+  execution_metadata:
+    timestamps:
+      finished_at: '2026-07-07T16:35:56.739583Z'

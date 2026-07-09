@@ -1,0 +1,152 @@
+schema: specforge.autonomous.run.v0
+run_id: RUN-0011
+slice_id: slice-001
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0001
+  rationale: 'npm test passed: 44 tests including compact footer formatting'
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  surface: backend
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  surface: release
+  disposition: satisfied
+  evidence_ref: CMD-0005
+  rationale: final pack dry-run passed after deploy note/index
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  surface: ui
+  disposition: satisfied
+  evidence_ref: src/status.ts
+  rationale: persistent status widget is not used for detailed status
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0001
+  rationale: footer status is compact, e.g. PSC 75/15
+change_class:
+  size: trivial
+  risk: low
+  surface:
+  - ui
+  - docs
+  complexity_track: trivial-light
+  escalation_triggers:
+  - core handoff invariant touched
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-08T09:55:20.932010Z'
+status: completed
+changed_files:
+- docs/product-spec.md
+- src/status.ts
+- test/status.test.ts
+- docs/deploys/README.md
+- docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+- specforge/scopes/SCOPE-0011/autonomous-implementation-packet.yaml
+- specforge/scopes/SCOPE-0011/decision-log.yaml
+produced_artifacts:
+- docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+command_evidence:
+- id: CMD-0001
+  command: npm test
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0001.log
+  summary: 'Vitest passed: 6 files, 44 tests.'
+- id: CMD-0002
+  command: npm run typecheck
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0002.log
+  summary: tsc --noEmit passed.
+- id: CMD-0003
+  command: npm pack --dry-run
+  exit_code: 0
+  required: false
+  tier: release
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0003.log
+  summary: initial pack passed; superseded by CMD-0005 after deploy note/index.
+- id: CMD-0004
+  command: forbidden runtime terminology grep
+  exit_code: 0
+  required: true
+  tier: boundary
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0004.log
+  summary: no forbidden runtime product terms found.
+- id: CMD-0005
+  command: npm pack --dry-run
+  exit_code: 0
+  required: true
+  tier: release-final
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0005.log
+  summary: final dry-run package passed with SCOPE-0011 deploy note.
+- id: CMD-0006
+  command: post-slice validator
+  exit_code: 1
+  required: false
+  tier: post-validator
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0006.log
+  summary: first post validator found packet scope/evidence/finalization bookkeeping
+    gaps; superseded by CMD-0007
+  diagnosis: finalization_bookkeeping_gap
+  next_action: widened packet scope for prior dirty package files, recorded observable
+    validation text, marked finalization pass, reran validator
+- id: CMD-0007
+  command: post-slice validator
+  exit_code: 0
+  required: true
+  tier: post-validator
+  output_ref: specforge/runs/RUN-0011/commands/CMD-0007.log
+  summary: post validator pass_with_warning; no fail/block
+authoritative_command_refs:
+- CMD-0001
+- CMD-0002
+- CMD-0004
+- CMD-0005
+- CMD-0007
+superseded_command_refs:
+- CMD-0003
+- CMD-0006
+known_answer_cases:
+- case: persistent status widget is not used for detailed status
+  check_ref: src/status.ts
+  disposition: satisfied
+- case: footer status is compact, e.g. PSC 75/15
+  check_ref: test/status.test.ts
+  disposition: satisfied
+unavailable_or_human_only:
+- reason: manual live TUI confirmation remains Bernardo dogfood
+  approved_replacement_ref: unit tests and local pack/typecheck
+deviations: []
+non_goal_violations: []
+flow_metrics:
+  review_rounds: 0
+  judge_rounds: 0
+  simplify_rounds: 0
+  repair_rounds: 0
+  commands_run: 5
+  expensive_commands_run: 3
+  subagent_artifacts: 0
+  elapsed_minutes: 8
+  budget_extensions: 0
+  product_repairs_after_pass: 0
+validation_summary:
+- 'observable compact footer behavior: persistent widget removed and footer uses PSC
+  75/15'

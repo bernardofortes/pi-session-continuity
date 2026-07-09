@@ -1,0 +1,135 @@
+status: blocked
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0001
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: warning
+  validator: skill_structural
+  findings:
+  - severity: warning
+    code: skill_path_not_provided
+    evidence: No --skill path was provided.
+    recommended_action: pass --skill to validate SpecForge Mini skill structure
+- status: warning
+  validator: yaml_snippet
+  findings:
+  - severity: warning
+    code: no_snippet_sources
+    evidence: No skill/planning doc supplied for fenced YAML snippet parsing.
+    recommended_action: pass --skill and/or --planning-doc when validating docs
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: pass
+  validator: scope_gate
+  findings: []
+- status: pass
+  validator: change_classification
+  findings: []
+- status: fail
+  validator: evidence_matrix
+  findings:
+  - severity: major
+    code: known_answer_case_not_mapped
+    evidence: evidence_plan.known_answer_cases[0] is not mapped to evidence reconciliation/checks.
+    recommended_action: map known-answer cases to command/artifact/manual evidence
+      before stop
+  - severity: major
+    code: known_answer_case_not_mapped
+    evidence: evidence_plan.known_answer_cases[1] is not mapped to evidence reconciliation/checks.
+    recommended_action: map known-answer cases to command/artifact/manual evidence
+      before stop
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: blocked
+  validator: stale_approval
+  findings:
+  - severity: blocker
+    code: post_repair_approval_missing
+    evidence: Final stop after product repair lacks current judge/run freshness hashes.
+    recommended_action: record fresh/delta review evidence after latest product repair
+- status: pass
+  validator: review_budget
+  findings: []
+- status: pass
+  validator: prompt_contract
+  findings: []
+- status: pass
+  validator: tool_routing
+  findings: []
+- status: pass
+  validator: flow_metrics
+  findings: []
+- status: pass
+  validator: yaml_artifact_parse
+  findings: []
+- status: blocked
+  validator: finalization_consistency
+  findings:
+  - severity: blocker
+    code: post_validator_pending_on_final
+    evidence: 'post validator invocation is not complete: {''phase'': ''post-slice'',
+      ''command'': ''python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+      --fixture . --out specforge/runs/RUN-0001/specforge-mini-validator-report-post.yaml'',
+      ''exit_code'': None, ''status'': ''pending'', ''warning_rationale'': ''will
+      be rerun after final artifacts are written''}'
+    recommended_action: run/record post-slice validator before finalizing
+  - severity: blocker
+    code: post_validator_status_not_allowed_on_final
+    evidence: post validator status='pending'
+    recommended_action: record a passed post-slice validator or route to repair/human/blocked
+  - severity: major
+    code: post_validator_output_ref_missing
+    evidence: post validator invocation lacks output_ref
+    recommended_action: record the validator report path
+  - severity: blocker
+    code: post_validator_pending_on_final
+    evidence: 'post validator invocation is not complete: {''phase'': ''post-slice'',
+      ''command'': ''python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+      --fixture . --out specforge/runs/RUN-0001/specforge-mini-validator-report-post.yaml'',
+      ''exit_code'': None, ''status'': ''pending'', ''warning_rationale'': ''will
+      be rerun after final artifacts are written''}'
+    recommended_action: run/record post-slice validator before finalizing
+  - severity: blocker
+    code: post_validator_status_not_allowed_on_final
+    evidence: post validator status='pending'
+    recommended_action: record a passed post-slice validator or route to repair/human/blocked
+  - severity: major
+    code: post_validator_output_ref_missing
+    evidence: post validator invocation lacks output_ref
+    recommended_action: record the validator report path
+  - severity: blocker
+    code: post_validator_pending_on_final
+    evidence: 'post validator invocation is not complete: {''phase'': ''post-slice'',
+      ''command'': ''python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+      --fixture . --out specforge/runs/RUN-0001/specforge-mini-validator-report-post.yaml'',
+      ''exit_code'': None, ''status'': ''pending'', ''warning_rationale'': ''will
+      be rerun after final artifacts are written''}'
+    recommended_action: run/record post-slice validator before finalizing
+  - severity: blocker
+    code: post_validator_status_not_allowed_on_final
+    evidence: post validator status='pending'
+    recommended_action: record a passed post-slice validator or route to repair/human/blocked
+  - severity: major
+    code: post_validator_output_ref_missing
+    evidence: post validator invocation lacks output_ref
+    recommended_action: record the validator report path
+- status: pass
+  validator: documentation_proportionality
+  findings: []
+- status: warning
+  validator: scenario_review
+  findings:
+  - severity: warning
+    code: scenario_review_artifact_missing
+    evidence: No scenario review artifact found in the active run dir.
+    recommended_action: write scenario matrix and independent review before GOAL MET/final
+      stop
+summary:
+  pass: 10
+  warning: 3
+  fail: 1
+  blocked: 2

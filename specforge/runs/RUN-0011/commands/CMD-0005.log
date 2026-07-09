@@ -1,0 +1,40 @@
+npm notice
+npm notice 📦  pi-session-continuity@0.1.0
+npm notice Tarball Contents
+npm notice 801B CHANGELOG.md
+npm notice 1.1kB LICENSE
+npm notice 5.2kB README.md
+npm notice 2.2kB docs/deploys/deploy-2026-07-07-SCOPE-0001-package-skeleton.md
+npm notice 1.6kB docs/deploys/deploy-2026-07-07-SCOPE-0002-core-artifact-engine.md
+npm notice 1.5kB docs/deploys/deploy-2026-07-07-SCOPE-0003-manual-checkpoint.md
+npm notice 1.3kB docs/deploys/deploy-2026-07-07-SCOPE-0004-status-settings.md
+npm notice 1.2kB docs/deploys/deploy-2026-07-07-SCOPE-0005-automatic-threshold.md
+npm notice 1.4kB docs/deploys/deploy-2026-07-07-SCOPE-0006-compaction-hygiene.md
+npm notice 1.5kB docs/deploys/deploy-2026-07-07-SCOPE-0007-tests-smoke.md
+npm notice 1.4kB docs/deploys/deploy-2026-07-07-SCOPE-0008-public-docs-release-readiness.md
+npm notice 1.6kB docs/deploys/deploy-2026-07-07-SCOPE-0009-dogfood-hardening-local-readiness.md
+npm notice 1.6kB docs/deploys/deploy-2026-07-08-SCOPE-0010-ux-settings-menu.md
+npm notice 790B docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+npm notice 2.3kB docs/deploys/README.md
+npm notice 28.8kB docs/product-spec.md
+npm notice 4.9kB docs/release-readiness/local-v1-readiness-2026-07-07.md
+npm notice 8.2kB extensions/session-continuity/index.ts
+npm notice 1.0kB package.json
+npm notice 1.9kB scripts/smoke/manual-checks.sh
+npm notice 14.2kB src/artifact.ts
+npm notice 8.2kB src/config.ts
+npm notice 1.8kB src/constants.ts
+npm notice 14.5kB src/handoff.ts
+npm notice 5.4kB src/status.ts
+npm notice 1.2kB src/trigger.ts
+npm notice Tarball Details
+npm notice name: pi-session-continuity
+npm notice version: 0.1.0
+npm notice filename: pi-session-continuity-0.1.0.tgz
+npm notice package size: 31.1 kB
+npm notice unpacked size: 115.7 kB
+npm notice shasum: 799a4558c9c0396bccb6d065b2117ae275f99293
+npm notice integrity: sha512-pE8lvkV5K9P/S[...]+Nlf4GMA389dg==
+npm notice total files: 26
+npm notice
+pi-session-continuity-0.1.0.tgz

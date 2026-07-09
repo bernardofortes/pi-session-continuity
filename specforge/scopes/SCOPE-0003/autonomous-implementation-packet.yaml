@@ -1,0 +1,368 @@
+schema: specforge.autonomous.implementation-packet.v0
+status: ready
+specforge:
+  scope_id: SCOPE-0003
+  run_id: RUN-0003
+  artifact_root: specforge/
+  packet_path: specforge/scopes/SCOPE-0003/autonomous-implementation-packet.yaml
+  compatibility_warnings: []
+export_kit:
+  contract_version: '0.9'
+  producer:
+    kind: claude_skill
+    name: specforge-mini-1-elicit-fallback
+    version: 0.9.1
+  consumer:
+    kind: claude_skill
+    name: specforge-mini-2-implement-fallback
+    minimum_version: 0.9.0
+  implementation_route: mini_only
+  contract_ref: skills/specforge-mini-1-elicit-fallback/references/export-kit-contract-v0.9.md
+  serialization:
+    format: yaml
+    must_parse_with: yaml.safe_load
+    free_text_policy: block_scalar_or_escaped
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - infra
+  complexity_track: normal-small
+  escalation_triggers:
+  - new product contract ambiguity
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: false
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+risk_class: normal
+risk_floor: normal
+rigor_mode: normal
+writer_strategy: inline
+diff_scope:
+  allowed_files_or_areas: &id001
+  - .gitignore
+  - .orchestrate/
+  - CHANGELOG.md
+  - LICENSE
+  - README.md
+  - docs/deploys/
+  - extensions/
+  - package.json
+  - package-lock.json
+  - scripts/
+  - specforge/
+  - src/
+  - test/
+  - tsconfig.json
+  - .pi/continue/
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - .git/
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+evidence_plan:
+  surfaces:
+  - manual checkpoint handoff tests
+  required:
+  - kind: command
+    command: npm test
+    proves: handoff/manual checkpoint tests pass
+  - kind: command
+    command: npm run typecheck
+    proves: TypeScript compiles
+  - kind: command
+    command: npm pack --dry-run
+    proves: package still packs
+  optional:
+  - runtime grep for forbidden product terminology
+  known_answer_cases:
+  - validation failure after synthesis queues no resume prompt
+  - manual checkpoint queues from disk artifact with correct idle/busy delivery mode
+  - successful handoff archives artifact and cleans lock
+  unavailable_or_human_only:
+  - clean GitHub-ref install smoke requires external approval and is deferred
+review_budget:
+  max_review_rounds: 2
+  max_repair_rounds: 2
+  requires_fresh_review: true
+  requires_specialized_review: false
+  self_check_allowed: false
+documentation_policy:
+  deploy_note_required: true
+  target_lines: 20-40
+  include_operational_risks: true
+execution_environment_policy:
+  preferred_mode: source_worktree
+  clean_execution_required: false
+  source_dirty_allowed: true
+  copy_back_allowed: false
+copy_back_policy:
+  required: false
+  allowed: false
+  target_paths: []
+  requires_reconciliation: true
+environment_prerequisites:
+  commands:
+  - node
+  - npm
+  services: []
+  fixtures: []
+  generated_tools: []
+validator_expectations:
+  pre_edit_required: true
+  post_slice_required: true
+  warning_policy: explicit_rationale_required
+routing_hints:
+  prompt_contracts:
+    judge: judge_delta.normal_small.v1
+  tools:
+    implementation: single writer; reviewers read-only
+  model_routing: {}
+context_sources:
+- id: product-spec
+  kind: product_contract
+  tool: read
+  artifact_ref: docs/product-spec.md
+  capabilities:
+  - manual_checkpoint
+  - handoff_contract
+  - validation_policy
+  source_commit: null
+  watched_paths:
+  - docs/product-spec.md
+  freshness:
+    status: fresh
+    checked_at: '2026-07-07'
+  required: true
+- id: agent-guidance
+  kind: agent_guidance
+  tool: read
+  artifact_ref: AGENTS.md
+  capabilities:
+  - repo_instructions
+  source_commit: null
+  watched_paths:
+  - AGENTS.md
+  freshness:
+    status: fresh
+    checked_at: '2026-07-07'
+  required: true
+waivers: []
+execution_metadata:
+  produced_by:
+    skill: specforge-mini-1-elicit-fallback
+    model: null
+    session_id: null
+  token_usage:
+    input_tokens: null
+    output_tokens: null
+    total_tokens: null
+  cost:
+    currency: USD
+    estimated: null
+  timestamps:
+    started_at: '2026-07-07T17:11:44.879855Z'
+    finished_at: '2026-07-07T17:11:44.879855Z'
+project_context:
+  architecture_refs: []
+  agent_guidance_refs:
+  - AGENTS.md
+  tooling_refs:
+  - docs/product-spec.md
+  inspected_refs:
+  - docs/product-spec.md
+  - src/handoff.ts
+  - test/handoff.test.ts
+  missing_expected_refs: []
+architecture_context:
+  status: not_needed
+  primary_ref: null
+  supporting_refs:
+  - docs/product-spec.md
+  drift_check_required: false
+  notes:
+  - Focused hardening of existing handoff tests/behavior.
+mini_anchor:
+  original_intent: Harden manual checkpoint handoff behavior after core artifact engine
+    hardening.
+  success_minimum:
+  - validation failure after synthesis queues no prompt
+  - busy/idle delivery mode covered
+  - archive status/path and lock cleanup covered
+  - local gates pass
+  non_goals:
+  - status/settings
+  - automatic threshold
+  - compaction changes
+  - external mutation
+  - product spec changes
+  invariants:
+  - Durable Continuity Brief first
+  - resume prompt from disk artifact
+  - failed artifacts are never resume input
+  - no campaign terminology in product runtime strings
+  allowed_scope:
+  - src/handoff.ts if needed
+  - test/handoff.test.ts
+  - docs/deploys
+  - SpecForge run evidence
+  drift_risks:
+  - expanding into threshold/status episodes
+  - claiming live Pi smoke without running it
+  stop_conditions:
+  - contract ambiguity
+  - reviewer blocker/major
+  - validation cannot pass locally
+mini_slice:
+  id: slice-001
+  smallest_e2e_proof: Focused handoff tests prove manual checkpoint failure/success
+    semantics and full local gates pass.
+  observable_behavior:
+  - invalid synthesized brief queues no prompt and writes failed artifact
+  - idle handoff sends immediately without followUp option; busy handoff uses followUp
+  - successful archive leaves final archive artifact and cleans active/per-event locks
+  allowed_files_or_areas: *id001
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - .git/
+  required_evidence:
+  - kind: command
+    command: npm test
+    path: null
+    check: tests pass
+    required: true
+    proves: new handoff tests pass
+  - kind: command
+    command: npm run typecheck
+    path: null
+    check: typecheck passes
+    required: true
+    proves: types remain valid
+  - kind: command
+    command: npm pack --dry-run
+    path: null
+    check: pack dry-run passes
+    required: true
+    proves: package still packs
+  - kind: artifact
+    command: null
+    path: specforge/runs/RUN-0003/subagents/JUDGE-0001.md
+    check: fresh reviewer pass
+    required: true
+    proves: independent review found no blockers/majors
+  observable_outcome_hints:
+    applies: false
+    trigger_reason: null
+    primary_scenario: unit-level handoff contract hardening
+    artifact_kind: cli_output
+    suggested_artifacts:
+    - CMD logs
+    - JUDGE-0001.md
+    spec_refs:
+    - docs/product-spec.md sections 3, 7, 8, 10, 12, 15, 18
+    spec_conformance_checks:
+    - no prompt on validation failure
+    - resume prompt from saved disk artifact
+    - archive after queue
+    - followUp only when busy
+    sanity_checks:
+    - no external mutation
+    - runtime source has no campaign terms
+    reviewer_needed: true
+  optional_evidence: []
+  what_not_to_do:
+  - do not edit product spec
+  - do not add threshold/status features
+  - do not install into Pi harness
+  budget:
+    max_files_changed: 8
+    max_new_files: 6
+    max_new_abstractions: 1
+    max_runtime_minutes: 60
+    max_review_rounds: 2
+    max_docs_pages: 1
+    allowed_tool_classes:
+    - read
+    - edit
+    - write
+    - bash
+    - subagent-reviewer
+    - lsp_diagnostics
+turnkey_gap_review:
+  status: clean
+  mode: self_check
+  reviewer_metadata: null
+  actors: []
+  primary_flows:
+  - manual checkpoint handoff
+  intent_coverage:
+  - requested_capability: manual checkpoint hardening
+    source_ref: campaign ledger EPN-0003
+    disposition: in_slice
+    slice_ref: slice-001
+    defer_ref: null
+    evidence_refs:
+    - docs/product-spec.md
+  usage_walkthrough:
+  - step: Synthesis returns invalid brief
+    expected: no prompt and failed artifact
+    gap: null
+    disposition: satisfied
+  - step: User runs checkpoint while agent busy
+    expected: followUp delivery from disk artifact
+    gap: null
+    disposition: satisfied
+  ux_gaps: []
+  functional_gaps: []
+  permission_gaps: []
+  success_error_state_gaps: []
+  architecture_gaps: []
+  evidence_gaps: []
+  unresolved_gaps: []
+  findings: []
+risk_classification:
+  risk_class: normal
+  risk_floor: normal
+  selected_rigor_mode: normal
+  writer_strategy: inline
+  risk_level: medium
+  signals:
+    api_contract: false
+    generated_artifacts: false
+    source_of_truth: false
+    persistence: true
+    migrations: false
+    auth_security: false
+    frontend_backend_boundary: false
+    forbidden_patterns: false
+    watched_paths_changed_since_context: false
+    required_context_source_stale_or_missing: false
+    multi_slice: false
+    critical_domain: false
+    architecture_context_missing_or_stale: false
+    non_linear_dependencies: false
+  rationale: Manual checkpoint handoff is continuity-critical; normal rigor and fresh
+    review required.
+autonomy:
+  mode: single-slice
+  max_slices: 1
+  total_budget:
+    max_files_changed: 8
+    max_runtime_minutes: 60
+dependencies:
+  blocking: []
+handoff:
+  implementation_baton: Run specforge-mini-2-implement-fallback against specforge/scopes/SCOPE-0003/autonomous-implementation-packet.yaml.
+    Persist evidence under specforge/runs/RUN-0003/.

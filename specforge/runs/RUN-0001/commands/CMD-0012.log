@@ -1,0 +1,43 @@
+status: fail
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0001
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: pass
+  validator: scope_gate
+  findings: []
+- status: pass
+  validator: change_classification
+  findings: []
+- status: fail
+  validator: evidence_matrix
+  findings:
+  - severity: major
+    code: known_answer_case_not_mapped
+    evidence: evidence_plan.known_answer_cases[0] is not mapped to evidence reconciliation/checks.
+    recommended_action: map known-answer cases to command/artifact/manual evidence
+      before stop
+  - severity: major
+    code: known_answer_case_not_mapped
+    evidence: evidence_plan.known_answer_cases[1] is not mapped to evidence reconciliation/checks.
+    recommended_action: map known-answer cases to command/artifact/manual evidence
+      before stop
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: pass
+  validator: review_budget
+  findings: []
+- status: pass
+  validator: tool_routing
+  findings: []
+summary:
+  pass: 6
+  warning: 0
+  fail: 1
+  blocked: 0

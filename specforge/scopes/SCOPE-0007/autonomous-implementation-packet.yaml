@@ -1,0 +1,248 @@
+schema: specforge.autonomous.implementation-packet.v0
+status: ready
+specforge:
+  scope_id: SCOPE-0007
+  run_id: RUN-0007
+  artifact_root: specforge/
+  packet_path: specforge/scopes/SCOPE-0007/autonomous-implementation-packet.yaml
+  compatibility_warnings: []
+export_kit:
+  contract_version: '0.9'
+  producer:
+    kind: claude_skill
+    name: specforge-mini-1-elicit-fallback
+    version: 0.9.1
+  consumer:
+    kind: claude_skill
+    name: specforge-mini-2-implement-fallback
+    minimum_version: 0.9.0
+  implementation_route: mini_only
+  serialization:
+    format: yaml
+    must_parse_with: yaml.safe_load
+    free_text_policy: block_scalar_or_escaped
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - docs
+  - test
+  complexity_track: normal-small
+  escalation_triggers:
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: false
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+risk_class: normal
+risk_floor: normal
+rigor_mode: normal
+writer_strategy: inline
+diff_scope:
+  allowed_files_or_areas: &id001
+  - .gitignore
+  - .orchestrate/
+  - CHANGELOG.md
+  - LICENSE
+  - README.md
+  - docs/
+  - extensions/
+  - package.json
+  - package-lock.json
+  - scripts/
+  - specforge/
+  - src/
+  - test/
+  - tsconfig.json
+  - .pi/continue/
+  forbidden_files_or_areas:
+  - AGENTS.md
+  - .git/
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+evidence_plan:
+  surfaces:
+  - tests
+  - manual smoke script
+  - package manifest
+  required:
+  - kind: command
+    command: npm test
+    proves: package/smoke tests pass
+  - kind: command
+    command: npm run typecheck
+    proves: TypeScript compiles
+  - kind: command
+    command: npm pack --dry-run
+    proves: package contains expected runtime/docs/scripts
+  known_answer_cases:
+  - smoke script represents all nine required manual Pi smoke assertions
+  - package manifest smoke command points to a packaged script
+  - package contract explicitly accounts for scripts/smoke
+  unavailable_or_human_only:
+  - clean GitHub-ref install smoke requires external approval and is deferred
+review_budget:
+  max_review_rounds: 2
+  max_repair_rounds: 2
+  requires_fresh_review: true
+  requires_specialized_review: false
+  self_check_allowed: false
+documentation_policy:
+  deploy_note_required: true
+  target_lines: 20-40
+  include_operational_risks: true
+execution_environment_policy:
+  preferred_mode: source_worktree
+  clean_execution_required: false
+  source_dirty_allowed: true
+  copy_back_allowed: false
+copy_back_policy:
+  required: false
+  allowed: false
+  target_paths: []
+  requires_reconciliation: true
+environment_prerequisites:
+  commands:
+  - node
+  - npm
+  - bash
+  services: []
+  fixtures: []
+  generated_tools: []
+validator_expectations:
+  pre_edit_required: true
+  post_slice_required: true
+  warning_policy: explicit_rationale_required
+routing_hints:
+  tools:
+    implementation: single writer; reviewers read-only
+context_sources:
+- id: product-spec
+  kind: product_contract
+  tool: read
+  artifact_ref: docs/product-spec.md
+  capabilities:
+  - quality_gates
+  - public_package_contract
+  - release_validation
+  freshness:
+    status: fresh
+    checked_at: '2026-07-07'
+  required: true
+waivers: []
+execution_metadata:
+  produced_by:
+    skill: specforge-mini-1-elicit-fallback
+  timestamps:
+    started_at: '2026-07-07T17:44:54.974319Z'
+    finished_at: '2026-07-07T17:44:54.974319Z'
+project_context:
+  agent_guidance_refs:
+  - AGENTS.md
+  tooling_refs:
+  - docs/product-spec.md
+  inspected_refs:
+  - package.json
+  - scripts/smoke/manual-checks.sh
+architecture_context:
+  status: not_needed
+  supporting_refs:
+  - docs/product-spec.md
+mini_anchor:
+  original_intent: Harden tests and smoke script release-readiness collateral.
+  success_minimum:
+  - smoke script names all required assertions
+  - pass/fail template present
+  - package includes smoke script or contract clarified
+  - local gates pass
+  non_goals:
+  - actually install Pi package
+  - push/tag/release/publish
+  - runtime behavior changes
+  invariants:
+  - external install/smoke remains deferred until approval
+  - public package should not reference missing script files
+  allowed_scope:
+  - package.json
+  - docs/product-spec.md
+  - scripts/smoke/manual-checks.sh
+  - test/package.test.ts
+  - docs/deploys
+  - SpecForge evidence
+  drift_risks:
+  - turning manual smoke into external mutation automation
+  stop_conditions:
+  - reviewer blocker/major
+  - validation failure
+mini_slice:
+  id: slice-001
+  smallest_e2e_proof: Unit test plus npm pack proves smoke script is present and represented.
+  observable_behavior:
+  - npm run smoke:manual prints manual checklist/template
+  - npm pack includes scripts/smoke/manual-checks.sh
+  - tests verify assertion coverage
+  allowed_files_or_areas: *id001
+  forbidden_files_or_areas:
+  - AGENTS.md
+  - .git/
+  required_evidence:
+  - kind: command
+    command: npm test
+    required: true
+    proves: tests pass
+  - kind: command
+    command: npm run typecheck
+    required: true
+    proves: types pass
+  - kind: command
+    command: npm pack --dry-run
+    required: true
+    proves: pack passes and includes smoke script
+  - kind: artifact
+    path: specforge/runs/RUN-0007/subagents/JUDGE-0001.md
+    required: true
+    proves: fresh review pass
+  observable_outcome_hints:
+    applies: false
+    reviewer_needed: true
+    spec_refs:
+    - docs/product-spec.md sections 15,16,20
+    sanity_checks:
+    - no external mutation
+    - no forbidden runtime terms
+  budget:
+    max_files_changed: 8
+    max_runtime_minutes: 45
+    max_review_rounds: 2
+turnkey_gap_review:
+  status: clean
+  mode: self_check
+  unresolved_gaps: []
+  intent_coverage:
+  - requested_capability: tests and smoke scripts
+    disposition: in_slice
+    slice_ref: slice-001
+risk_classification:
+  risk_class: normal
+  risk_floor: normal
+  selected_rigor_mode: normal
+  writer_strategy: inline
+  risk_level: medium
+  signals:
+    persistence: false
+autonomy:
+  mode: single-slice
+  max_slices: 1
+dependencies:
+  blocking: []
+handoff:
+  implementation_baton: Run Mini 2 fallback against specforge/scopes/SCOPE-0007/autonomous-implementation-packet.yaml

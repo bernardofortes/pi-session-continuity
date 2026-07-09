@@ -1,0 +1,11 @@
+schema: specforge.decision-log.v0
+scope_id: SCOPE-0003
+decisions:
+- id: D-001
+  decision: Limit EPN-0003 to manual handoff tests/repairs
+  rationale: status/settings/threshold/compaction have separate episodes.
+  evidence_refs:
+  - campaign-ledger.md
+  - docs/product-spec.md
+timestamps:
+  created_at: '2026-07-07T17:11:44.879855Z'

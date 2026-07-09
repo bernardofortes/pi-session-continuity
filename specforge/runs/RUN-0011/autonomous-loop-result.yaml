@@ -1,0 +1,103 @@
+autonomous_loop_result:
+  schema: specforge.autonomous.loop-result.v0
+  status: completed
+  scope_id: SCOPE-0011
+  run_id: RUN-0011
+  packet_ref: specforge/scopes/SCOPE-0011/autonomous-implementation-packet.yaml
+  deploy_note_ref: docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+  deploy_index_ref: docs/deploys/README.md
+  autonomy:
+    mode: single-slice
+    slices_planned: 1
+    slices_completed: 1
+    stopped_early: false
+  final_decision: stop
+  slice_results:
+  - slice_id: slice-001
+    decision: stop
+    judge: pass
+    simplify: pass
+  command_refs:
+  - CMD-0001
+  - CMD-0002
+  - CMD-0004
+  - CMD-0005
+  - CMD-0007
+  required_evidence_reconciliation:
+  - packet_item_ref: mini_slice.required_evidence[0]
+    kind: command
+    surface: ui
+    disposition: satisfied
+    evidence_ref: CMD-0001
+    rationale: 'npm test passed: 44 tests including compact footer formatting'
+  - packet_item_ref: mini_slice.required_evidence[1]
+    kind: command
+    surface: backend
+    disposition: satisfied
+    evidence_ref: CMD-0002
+    rationale: typecheck passed
+  - packet_item_ref: mini_slice.required_evidence[2]
+    kind: command
+    surface: release
+    disposition: satisfied
+    evidence_ref: CMD-0005
+    rationale: final pack dry-run passed after deploy note/index
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    kind: artifact
+    surface: ui
+    disposition: satisfied
+    evidence_ref: src/status.ts
+    rationale: persistent status widget is not used for detailed status
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    kind: command
+    surface: ui
+    disposition: satisfied
+    evidence_ref: CMD-0001
+    rationale: footer status is compact, e.g. PSC 75/15
+  authoritative_command_refs:
+  - CMD-0001
+  - CMD-0002
+  - CMD-0004
+  - CMD-0005
+  - CMD-0007
+  superseded_command_refs:
+  - CMD-0003
+  - CMD-0006
+  flow_metrics:
+    review_rounds: 0
+    judge_rounds: 0
+    simplify_rounds: 0
+    repair_rounds: 0
+    commands_run: 5
+    expensive_commands_run: 3
+    subagent_artifacts: 0
+    elapsed_minutes: 8
+    budget_extensions: 0
+    product_repairs_after_pass: 0
+  residual_risks:
+  - Manual Pi TUI dogfood should confirm the previous truncated widget no longer appears.
+  validation_summary:
+  - 'npm test passed: 44 tests (CMD-0001)'
+  - npm run typecheck passed (CMD-0002)
+  - forbidden runtime terminology grep passed (CMD-0004)
+  - final npm pack --dry-run passed (CMD-0005)
+  - 'observable compact footer behavior: persistent widget removed and footer uses
+    PSC 75/15'
+  - SpecForge post-slice validator pass_with_warning with no fail/block (CMD-0007)
+  known_answer_cases:
+  - case: persistent status widget is not used for detailed status
+    check_ref: src/status.ts
+    disposition: satisfied
+  - case: footer status is compact, e.g. PSC 75/15
+    check_ref: test/status.test.ts
+    disposition: satisfied
+  unavailable_or_human_only:
+  - reason: manual live TUI confirmation remains Bernardo dogfood
+    approved_replacement_ref: unit tests and local pack/typecheck
+  finalization_consistency:
+    status: pass
+    findings:
+    - CMD-0007 post validator pass_with_warning; no fail/block.
+  execution_metadata:
+    timestamps:
+      finished_at: '2026-07-08T09:55:20.932010Z'

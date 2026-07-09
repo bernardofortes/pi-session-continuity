@@ -1,0 +1,16 @@
+decisions:
+- id: D-001
+  kind: user_confirmed
+  decision: Use campaign conductor and SpecForge Mini fallback route for implementation
+    cycles.
+  rationale: User approved this route and ledger records it.
+  evidence_refs:
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+- id: D-002
+  kind: project_convention
+  decision: External install/tag/release/publish remain forbidden without explicit
+    approval.
+  rationale: Product spec and AGENTS require human approval.
+  evidence_refs:
+  - docs/product-spec.md
+  - AGENTS.md

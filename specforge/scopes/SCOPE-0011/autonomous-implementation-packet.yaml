@@ -1,0 +1,168 @@
+schema: specforge.autonomous.implementation-packet.v0
+status: ready
+specforge:
+  scope_id: SCOPE-0011
+  run_id: RUN-0011
+  artifact_root: specforge/
+  packet_path: specforge/scopes/SCOPE-0011/autonomous-implementation-packet.yaml
+  compatibility_warnings:
+  - fallback route used by campaign instruction
+export_kit:
+  contract_version: '0.9'
+  producer:
+    kind: claude_skill
+    name: specforge-mini-1-elicit-fallback
+    version: 0.9.1
+  consumer:
+    kind: claude_skill
+    name: specforge-mini-2-implement-fallback
+    minimum_version: 0.9.0
+  implementation_route: mini_only
+  contract_ref: skills/specforge-mini-1-elicit-fallback/references/export-kit-contract-v0.9.md
+  serialization:
+    format: yaml
+    must_parse_with: yaml.safe_load
+    free_text_policy: block_scalar_or_escaped
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+change_class:
+  size: trivial
+  risk: low
+  surface:
+  - ui
+  - docs
+  complexity_track: trivial-light
+  escalation_triggers:
+  - core handoff invariant touched
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+risk_class: trivial
+risk_floor: light
+rigor_mode: light
+writer_strategy: inline
+diff_scope:
+  allowed_files_or_areas:
+  - .orchestrate/
+  - specforge/
+  - docs/
+  - src/
+  - extensions/
+  - test/
+  - scripts/
+  - README.md
+  - CHANGELOG.md
+  - LICENSE
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - .gitignore
+  forbidden_files_or_areas:
+  - src/artifact.ts
+  - src/handoff.ts
+  - .git/
+  - node_modules/
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+evidence_plan:
+  surfaces:
+  - ui
+  - docs
+  required:
+  - spec update
+  - status tests
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+  optional:
+  - manual pi -e dogfood confirms widget gone
+  known_answer_cases:
+  - persistent status widget is not used for detailed status
+  - footer status is compact, e.g. PSC 75/15
+  unavailable_or_human_only:
+  - manual live TUI confirmation remains Bernardo dogfood
+review_budget:
+  max_review_rounds: 1
+  max_repair_rounds: 1
+  requires_fresh_review: false
+  requires_specialized_review: false
+  self_check_allowed: true
+documentation_policy:
+  deploy_note_required: true
+  readme_update_required: false
+  product_spec_update_required: true
+  style: compact
+execution_environment_policy:
+  allowed_commands:
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+  forbidden_commands:
+  - pi install
+  - git push
+  - git tag
+  - npm publish
+  - gh release
+copy_back_policy:
+  allowed: false
+  required: false
+  requires_reconciliation: false
+  target_paths: []
+environment_prerequisites:
+- node_modules available
+validator_expectations:
+  preflight_required: false
+  post_slice_required: true
+  allow_warnings:
+  - skill_path_not_provided
+  - no_snippet_sources
+  - scenario_review_artifact_missing
+routing_hints:
+  implementation: parent as single writer
+  review: self-check acceptable for trivial-light
+waivers: []
+project_context:
+  dogfood_finding: persistent status widget was truncated in Pi TUI
+architecture_context:
+  core_invariant: unchanged
+mini_anchor:
+  goal: Remove oversized persistent status widget and use compact footer status.
+  non_goals:
+  - no handoff/artifact changes
+  - no external mutation
+  - no active harness install
+mini_slice:
+  id: slice-001
+  goal: Compact status footer repair
+  allowed_files:
+  - docs/product-spec.md
+  - src/status.ts
+  - test/status.test.ts
+  - docs/deploys/README.md
+  - docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+  required_evidence:
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+turnkey_gap_review:
+  status: clean
+  intent_coverage:
+  - request: Remove truncated persistent widget
+    disposition: in_slice
+  - request: Keep footer compact
+    disposition: in_slice
+  unresolved_gaps: []
+autonomy:
+  mode: bounded_serial
+  max_slices: 1
+  stop_on_new_human_decision: true
+handoff:
+  implementation_consumer: specforge-mini-2-implement-fallback
+  packet_ready: true

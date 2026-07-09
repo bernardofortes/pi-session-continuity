@@ -1,0 +1,149 @@
+schema: specforge.autonomous.preflight.v0
+packet_ref: specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+run_id: RUN-0001
+slice_id: slice-001
+status: pass
+base_commit: initial repository without package skeleton committed
+change_class:
+  size: medium
+  risk: normal
+  surface:
+  - infra
+  - docs
+  complexity_track: normal-complex
+  escalation_triggers:
+  - external install/tag/release/publish request
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+execution_environment:
+  mode: source_worktree
+  source_ref: main working tree
+  source_worktree: /home/ubuntu/pi-session-continuity
+  execution_worktree: /home/ubuntu/pi-session-continuity
+  branch: main
+  execution_status_before_edits: clean_except_process_artifacts
+diff_scope:
+  allowed_files_or_areas:
+  - package.json
+  - tsconfig.json
+  - README.md
+  - LICENSE
+  - CHANGELOG.md
+  - extensions/session-continuity/
+  - src/
+  - test/
+  - scripts/smoke/
+  - docs/deploys/
+  - specforge/
+  - .orchestrate/
+  - .gitignore
+  - package-lock.json
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - .git/
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+scope_gate:
+  dirty_allowed_paths:
+  - .orchestrate/
+  - specforge/
+  dirty_forbidden_paths: []
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+  status: pass
+evidence_plan_mapping:
+  known_answer_cases:
+  - runtime grep no loop/campaign/episode terms
+  - package dry-run contents match manifest
+  unavailable_or_human_only:
+  - GitHub ref clean install smoke deferred by external approval gate
+evidence_matrix:
+- unit tests
+- typecheck
+- pack dry-run
+- fresh reviewer judge
+- simplify review
+validation_tiers:
+  cheap:
+  - runtime grep
+  focused:
+  - unit tests
+  integration:
+  - typecheck
+  full:
+  - npm test
+  - npm run typecheck
+  release:
+  - npm pack --dry-run
+tool_routing:
+  subagents:
+  - reviewer judge
+  - reviewer simplify
+  - delta judge
+  heavy_tools: not used; unnecessary for skeleton
+context_sources:
+- docs/product-spec.md
+- AGENTS.md
+- Pi docs/extensions.md
+- Pi docs/packages.md
+working_tree:
+  execution_status: preflight_artifacts_only
+  source_status: dirty_non_overlapping
+  unrelated_dirty_paths: []
+  overlapping_dirty_paths: []
+copy_back_policy:
+  allowed: false
+  required: false
+  target_paths: []
+  requires_reconciliation: true
+copy_back_reconciliation:
+  required: false
+  status: not_applicable
+  target_paths: []
+  overlapping_source_dirty_paths: []
+  evidence_refs: []
+validator_invocations:
+- phase: pre-edit
+  command: python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+    --fixture . --only packet_readiness,scope_gate,change_classification,evidence_matrix,command_log_monotonicity,review_budget,tool_routing
+    --out specforge/runs/RUN-0001/specforge-mini-validator-report-pre.yaml
+  exit_code: 0
+  status: pass_with_warning
+checks:
+  packet_ready: pass
+  risk_class_executable: pass
+  rigor_floor_respected: pass
+  gap_review_clean: pass
+  intent_coverage_ready: pass
+  no_blocking_dependencies: pass
+  architecture_refs_available: warning
+  context_sources_fresh_or_optional: pass
+  scope_explicit: pass
+  budget_explicit: pass
+  required_commands_available: pass
+  isolated_environment_ready: not_applicable
+  working_tree_safe: pass
+  copy_back_safe: not_applicable
+  deploy_note_path_allowed: pass
+  deploy_note_path: docs/deploys/deploy-2026-07-07-SCOPE-0001-package-skeleton.md
+blockers: []
+warnings:
+- architecture context missing accepted as low-risk for package skeleton
+- GitHub ref smoke deferred
+compatibility_warnings: []
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T16:29:43.327375Z'

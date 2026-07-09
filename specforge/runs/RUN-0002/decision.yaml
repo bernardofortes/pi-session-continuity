@@ -1,0 +1,66 @@
+schema: specforge.autonomous.decision.v0
+run_id: RUN-0002
+slice_id: slice-001
+decision: stop
+why: EPN-0002 core artifact/config hardening completed and validated locally.
+final_artifacts:
+- specforge/runs/RUN-0002/autonomous-loop-result.yaml
+- specforge/runs/RUN-0002/final-decision.yaml
+- docs/deploys/deploy-2026-07-07-SCOPE-0002-core-artifact-engine.md
+- specforge/runs/RUN-0002/subagents/JUDGE-0001.md
+blocker_dispositions: []
+accepted_minors: []
+waivers: []
+residual_risks:
+- Clean Pi install/manual smoke remains deferred behind external approval.
+- Directive-promotion detection remains heuristic for later hardening if needed.
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0003
+  rationale: 'npm test passed: 4 files, 26 tests'
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0004
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0005
+  rationale: pack dry-run passed
+- packet_item_ref: mini_slice.required_evidence[3]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0002/subagents/JUDGE-0001.md
+  rationale: fresh reviewer passed with no blockers/majors/minors
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: test/artifact.test.ts
+  rationale: non-pending Continuity Brief artifacts must not be resume prompt input;
+    covered by test/artifact.test.ts
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: test/config.test.ts
+  rationale: relative artifactDirectory must remain under CONFIG_DIR_NAME unless absolute;
+    covered by test/config.test.ts
+validator_invocations:
+- phase: post-slice
+  command: python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+    --fixture . --out specforge/runs/RUN-0002/specforge-mini-validator-report-post.yaml
+  exit_code: 0
+  status: pass_with_warning
+  output_ref: specforge/runs/RUN-0002/specforge-mini-validator-report-post.yaml
+  warning_rationale: Only skill/snippet/scenario-review process warnings remain; no
+    fail/block; JUDGE-0001 provides fresh independent review.
+freshness:
+  run_artifact_hash: 53df8b8fa323bd89c02336acfa76a5d33b04b5f616fe6455d5d0d50b4d1af63f
+  judge_artifact_hash: 2710eef9b1e2e078178ae169bde29df5956d9daace941a30d3045b3e159baa98
+  simplify_artifact_hash: null
+  decided_after_artifacts: true
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T17:08:56.602139Z'

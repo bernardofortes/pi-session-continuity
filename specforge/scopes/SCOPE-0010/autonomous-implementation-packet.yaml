@@ -1,0 +1,200 @@
+schema: specforge.autonomous.implementation-packet.v0
+status: ready
+specforge:
+  scope_id: SCOPE-0010
+  run_id: RUN-0010
+  artifact_root: specforge/
+  packet_path: specforge/scopes/SCOPE-0010/autonomous-implementation-packet.yaml
+  compatibility_warnings:
+  - fallback route intentionally used by campaign instruction
+export_kit:
+  contract_version: '0.9'
+  producer:
+    kind: claude_skill
+    name: specforge-mini-1-elicit-fallback
+    version: 0.9.1
+  consumer:
+    kind: claude_skill
+    name: specforge-mini-2-implement-fallback
+    minimum_version: 0.9.0
+  implementation_route: mini_only
+  contract_ref: skills/specforge-mini-1-elicit-fallback/references/export-kit-contract-v0.9.md
+  serialization:
+    format: yaml
+    must_parse_with: yaml.safe_load
+    free_text_policy: block_scalar_or_escaped
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - ui
+  - docs
+  complexity_track: normal-small
+  escalation_triggers:
+  - new Pi API uncertainty
+  - settings persistence could corrupt config
+  - core handoff invariant touched
+  needs_worktree: false
+  needs_external_review: true
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+risk_class: normal
+risk_floor: normal
+rigor_mode: normal
+writer_strategy: inline
+diff_scope:
+  allowed_files_or_areas:
+  - .orchestrate/
+  - specforge/
+  - docs/
+  - src/
+  - extensions/
+  - test/
+  - scripts/
+  - README.md
+  - CHANGELOG.md
+  - LICENSE
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - .gitignore
+  forbidden_files_or_areas:
+  - src/artifact.ts core schema changes
+  - src/handoff.ts core handoff invariant changes
+  - .git/
+  - node_modules/
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+evidence_plan:
+  surfaces:
+  - Pi TUI command UX
+  - config persistence
+  - docs/spec
+  required:
+  - product spec updated before implementation
+  - unit tests for formatting/config write helpers
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+  - fresh reviewer/judge
+  optional:
+  - manual pi -e dogfood rerun after implementation
+  known_answer_cases:
+  - /continuity settings show remains textual fallback
+  - /continuity settings opens interactive menu when UI is available
+  - settings notifications are not warning solely because disabled reason is none
+  - triggerAtPercent can be changed to 75 from inside Pi
+  unavailable_or_human_only:
+  - active-harness install and Pi Continue removal require explicit approval and are
+    out of scope
+review_budget:
+  max_review_rounds: 2
+  max_repair_rounds: 2
+  requires_fresh_review: true
+  requires_specialized_review: false
+  self_check_allowed: true
+documentation_policy:
+  deploy_note_required: true
+  readme_update_required: true
+  product_spec_update_required: true
+  style: compact
+execution_environment_policy:
+  allowed_commands:
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+  - python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+  forbidden_commands:
+  - pi install
+  - git push
+  - git tag
+  - npm publish
+  - gh release
+copy_back_policy:
+  allowed: false
+  required: false
+  requires_reconciliation: false
+  target_paths: []
+environment_prerequisites:
+- node_modules available
+- Pi docs available locally for UI APIs
+validator_expectations:
+  preflight_required: true
+  post_slice_required: true
+  allow_warnings:
+  - skill_path_not_provided
+  - no_snippet_sources
+  - scenario_review_artifact_missing
+routing_hints:
+  implementation: parent as single writer
+  review: fresh reviewer subagent
+waivers: []
+project_context:
+  primary_spec: docs/product-spec.md
+  campaign_ledger: .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+  dogfood_finding: status/settings UX looked like internal chatter; settings should
+    be navigable in Pi
+architecture_context:
+  config_source_of_truth: <workspace>/<CONFIG_DIR_NAME>/session-continuity.json
+  ui_api_refs:
+  - docs/extensions.md ctx.ui.select/input/notify/setWidget
+  - docs/tui.md Settings/Toggles pattern
+  core_invariant: durable Continuity Brief first; resume prompt from disk; compaction
+    as hygiene
+mini_anchor:
+  goal: Polish status/settings UX and add interactive settings persistence without
+    changing handoff semantics.
+  non_goals:
+  - no external mutation
+  - no active harness install
+  - no Pi Continue removal
+  - no artifact schema changes
+  - no product loop/campaign/episode concepts
+mini_slice:
+  id: slice-001
+  goal: Spec + implement command UX/settings menu
+  allowed_files:
+  - docs/product-spec.md
+  - README.md
+  - src/config.ts
+  - src/status.ts
+  - extensions/session-continuity/index.ts
+  - test/config.test.ts
+  - test/status.test.ts
+  - package.json
+  - docs/deploys/README.md
+  - docs/deploys/deploy-2026-07-08-SCOPE-0010-ux-settings-menu.md
+  required_evidence:
+  - spec updated
+  - tests updated
+  - npm test
+  - npm run typecheck
+  - npm pack --dry-run
+  - fresh review
+turnkey_gap_review:
+  status: clean
+  intent_coverage:
+  - request: Make status/settings UX more human-facing instead of internal notification
+      chatter
+    disposition: in_slice
+    evidence: EPN-0010 goal and docs/product-spec update
+  - request: Allow changing triggerAtPercent from inside Pi by navigating settings
+    disposition: in_slice
+    evidence: interactive /continuity settings menu
+  unresolved_gaps: []
+autonomy:
+  mode: bounded_serial
+  max_slices: 1
+  stop_on_new_human_decision: true
+handoff:
+  implementation_consumer: specforge-mini-2-implement-fallback
+  packet_ready: true
+  next_command: implement SCOPE-0010 via fallback route

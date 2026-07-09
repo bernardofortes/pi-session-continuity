@@ -1,0 +1,17 @@
+
+> pi-session-continuity@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /home/ubuntu/pi-session-continuity
+
+ ✓ test/config.test.ts (5 tests) 3ms
+ ✓ test/artifact.test.ts (7 tests) 6ms
+ ✓ test/status.test.ts (1 test) 12ms
+ ✓ test/handoff.test.ts (9 tests) 50ms
+
+ Test Files  4 passed (4)
+      Tests  22 passed (22)
+   Start at  16:33:14
+   Duration  968ms (transform 148ms, setup 0ms, collect 1.58s, tests 70ms, environment 0ms, prepare 208ms)
+

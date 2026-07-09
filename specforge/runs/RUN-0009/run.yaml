@@ -1,0 +1,184 @@
+schema: specforge.autonomous.run.v0
+run_id: RUN-0009
+slice_id: slice-001
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: 'npm test passed: 6 files, 40 tests'
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0003
+  rationale: typecheck passed
+- packet_item_ref: evidence_plan.required[2]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0004
+  rationale: manual smoke checklist remains runnable
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0011
+  rationale: final current-tree pack dry-run passed after readiness/deploy/ledger
+    docs
+- packet_item_ref: mini_slice.required_evidence[3]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0009/subagents/JUDGE-0001.md
+  rationale: fresh reviewer passed with no blockers/majors; process minors addressed
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  rationale: all nine local episodes have evidence or documented deferrals
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  rationale: remaining risks are documented
+- packet_item_ref: evidence_plan.known_answer_cases[2]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  rationale: external validation decision is separated from local readiness
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - docs
+  complexity_track: normal-small
+  escalation_triggers:
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: false
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T18:06:03.743567Z'
+status: completed
+changed_files:
+- docs/release-readiness/local-v1-readiness-2026-07-07.md
+- docs/deploys/README.md
+- docs/deploys/deploy-2026-07-07-SCOPE-0009-dogfood-hardening-local-readiness.md
+- .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+- specforge/scopes/SCOPE-0009/autonomous-implementation-packet.yaml
+- specforge/scopes/SCOPE-0009/decision-log.yaml
+produced_artifacts:
+- docs/release-readiness/local-v1-readiness-2026-07-07.md
+- docs/deploys/deploy-2026-07-07-SCOPE-0009-dogfood-hardening-local-readiness.md
+- specforge/runs/RUN-0009/subagents/JUDGE-0001.md
+command_evidence:
+- id: CMD-0001
+  command: pre-edit validator subset
+  exit_code: 0
+  required: true
+  tier: preflight
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0001.log
+  summary: validator subset passed
+- id: CMD-0002
+  command: npm test
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0002.log
+  summary: 'Vitest passed: 6 files, 40 tests.'
+- id: CMD-0003
+  command: npm run typecheck
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0003.log
+  summary: tsc --noEmit passed.
+- id: CMD-0004
+  command: npm run smoke:manual
+  exit_code: 0
+  required: true
+  tier: smoke-template
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0004.log
+  summary: manual smoke checklist printed.
+- id: CMD-0005
+  command: npm pack --dry-run
+  exit_code: 0
+  required: true
+  tier: release
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0005.log
+  summary: initial dry-run package passed.
+- id: CMD-0006
+  command: forbidden runtime terminology grep
+  exit_code: 0
+  required: true
+  tier: boundary
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0006.log
+  summary: no forbidden runtime terms found.
+- id: CMD-0007
+  command: npm pack --dry-run
+  exit_code: 0
+  required: true
+  tier: release-final
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0007.log
+  summary: final dry-run package passed with readiness/deploy docs.
+- id: CMD-0008
+  command: forbidden runtime terminology grep
+  exit_code: 0
+  required: true
+  tier: boundary-final
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0008.log
+  summary: no forbidden runtime terms found after final docs.
+- id: CMD-0011
+  command: npm pack --dry-run
+  exit_code: 0
+  required: true
+  tier: release-final-current-tree
+  output_ref: specforge/runs/RUN-0009/commands/CMD-0011.log
+  summary: final current-tree dry-run package passed after deploy/readiness doc ref
+    updates.
+authoritative_command_refs:
+- CMD-0002
+- CMD-0003
+- CMD-0004
+- CMD-0008
+- CMD-0011
+superseded_command_refs:
+- CMD-0005
+- CMD-0006
+- CMD-0007
+known_answer_cases:
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  case: all nine local episodes have evidence or documented deferrals
+  check_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  disposition: satisfied
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  case: remaining risks are documented
+  check_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  disposition: satisfied
+- packet_item_ref: evidence_plan.known_answer_cases[2]
+  case: external validation decision is separated from local readiness
+  check_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  disposition: satisfied
+unavailable_or_human_only:
+- reason: clean GitHub-ref install, tag, release, publish, push, and external smoke
+    require explicit approval and are deferred
+  approved_replacement_ref: local readiness gates and report
+deviations: []
+non_goal_violations: []
+flow_metrics:
+  review_rounds: 1
+  judge_rounds: 1
+  simplify_rounds: 0
+  repair_rounds: 1
+  commands_run: 8
+  expensive_commands_run: 5
+  subagent_artifacts: 1
+  elapsed_minutes: 25
+  budget_extensions: 0
+  product_repairs_after_pass: 0
+flow_inefficiency: commands_run exceeded normal-small target because final closure
+  required initial gates, post-review ledger/deploy repairs, final pack/grep after
+  docs changed, and validator self-reference rerun; stop non-blocking retries after
+  final validator.

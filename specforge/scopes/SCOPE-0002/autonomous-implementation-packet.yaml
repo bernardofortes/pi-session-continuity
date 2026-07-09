@@ -1,0 +1,392 @@
+schema: specforge.autonomous.implementation-packet.v0
+status: ready
+specforge:
+  scope_id: SCOPE-0002
+  run_id: RUN-0002
+  artifact_root: specforge/
+  packet_path: specforge/scopes/SCOPE-0002/autonomous-implementation-packet.yaml
+  compatibility_warnings: []
+export_kit:
+  contract_version: '0.9'
+  producer:
+    kind: claude_skill
+    name: specforge-mini-1-elicit-fallback
+    version: 0.9.1
+  consumer:
+    kind: claude_skill
+    name: specforge-mini-2-implement-fallback
+    minimum_version: 0.9.0
+  implementation_route: mini_only
+  contract_ref: skills/specforge-mini-1-elicit-fallback/references/export-kit-contract-v0.9.md
+  serialization:
+    format: yaml
+    must_parse_with: yaml.safe_load
+    free_text_policy: block_scalar_or_escaped
+execution_readiness:
+  status: ready
+  reason: null
+  blocking_decisions: []
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - infra
+  complexity_track: normal-small
+  escalation_triggers:
+  - new product contract ambiguity
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: false
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+risk_class: normal
+risk_floor: normal
+rigor_mode: normal
+writer_strategy: inline
+diff_scope:
+  allowed_files_or_areas: &id001
+  - src/artifact.ts
+  - src/config.ts
+  - test/artifact.test.ts
+  - test/config.test.ts
+  - docs/deploys/
+  - specforge/scopes/SCOPE-0002/
+  - specforge/runs/RUN-0002/
+  - .orchestrate/campaigns/pi-session-continuity-v1/episodes/EPN-0002-core-artifact-engine/
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+  - .gitignore
+  - .orchestrate/
+  - CHANGELOG.md
+  - LICENSE
+  - README.md
+  - extensions/
+  - package.json
+  - package-lock.json
+  - scripts/
+  - specforge/
+  - src/
+  - test/
+  - tsconfig.json
+  - .pi/continue/
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - .git/
+  - extensions/session-continuity/index.ts
+  - src/handoff.ts
+  - src/status.ts
+  generated_allowed: false
+  lockfile_allowed: true
+  migrations_allowed: false
+  api_types_allowed: false
+evidence_plan:
+  surfaces:
+  - core artifact validation
+  - configuration pathing
+  required:
+  - kind: command
+    command: npm test
+    proves: artifact/config tests pass
+  - kind: command
+    command: npm run typecheck
+    proves: TypeScript compiles
+  - kind: command
+    command: npm pack --dry-run
+    proves: package still packs after core hardening
+  optional:
+  - runtime grep for forbidden product terminology
+  known_answer_cases:
+  - non-pending Continuity Brief artifacts must not be resume prompt input
+  - relative artifactDirectory must remain under CONFIG_DIR_NAME unless absolute
+  unavailable_or_human_only:
+  - clean GitHub-ref install smoke requires external approval and is deferred
+review_budget:
+  max_review_rounds: 2
+  max_repair_rounds: 2
+  requires_fresh_review: true
+  requires_specialized_review: false
+  self_check_allowed: false
+documentation_policy:
+  deploy_note_required: true
+  target_lines: 20-40
+  include_operational_risks: true
+execution_environment_policy:
+  preferred_mode: source_worktree
+  clean_execution_required: false
+  source_dirty_allowed: true
+  copy_back_allowed: false
+copy_back_policy:
+  required: false
+  allowed: false
+  target_paths: []
+  requires_reconciliation: true
+environment_prerequisites:
+  commands:
+  - node
+  - npm
+  services: []
+  fixtures: []
+  generated_tools: []
+validator_expectations:
+  pre_edit_required: true
+  post_slice_required: true
+  warning_policy: explicit_rationale_required
+routing_hints:
+  prompt_contracts:
+    judge: judge_delta.normal_small.v1
+  tools:
+    implementation: single writer; reviewers read-only
+  model_routing: {}
+context_sources:
+- id: product-spec
+  kind: product_contract
+  tool: read
+  artifact_ref: docs/product-spec.md
+  capabilities:
+  - artifact_contract
+  - config_contract
+  - validation_policy
+  source_commit: null
+  watched_paths:
+  - docs/product-spec.md
+  freshness:
+    status: fresh
+    checked_at: '2026-07-07'
+  required: true
+- id: agent-guidance
+  kind: agent_guidance
+  tool: read
+  artifact_ref: AGENTS.md
+  capabilities:
+  - repo_instructions
+  source_commit: null
+  watched_paths:
+  - AGENTS.md
+  freshness:
+    status: fresh
+    checked_at: '2026-07-07'
+  required: true
+waivers: []
+execution_metadata:
+  produced_by:
+    skill: specforge-mini-1-elicit-fallback
+    model: null
+    session_id: null
+  token_usage:
+    input_tokens: null
+    output_tokens: null
+    total_tokens: null
+  cost:
+    currency: USD
+    estimated: null
+  timestamps:
+    started_at: '2026-07-07T17:00:35.278170Z'
+    finished_at: '2026-07-07T17:00:35.278170Z'
+project_context:
+  architecture_refs: []
+  agent_guidance_refs:
+  - AGENTS.md
+  tooling_refs:
+  - docs/product-spec.md
+  inspected_refs:
+  - docs/product-spec.md
+  - .orchestrate/campaigns/pi-session-continuity-v1/campaign-ledger.md
+  - src/artifact.ts
+  - src/config.ts
+  - test/artifact.test.ts
+  - test/config.test.ts
+  missing_expected_refs:
+  - ARCHITECTURE.md
+  - docs/architecture.md
+architecture_context:
+  status: not_needed
+  primary_ref: null
+  supporting_refs:
+  - docs/product-spec.md
+  drift_check_required: false
+  notes:
+  - Focused contract hardening within existing artifact/config modules.
+mini_anchor:
+  original_intent: Harden Pi Session Continuity artifact/config core after package
+    skeleton.
+  success_minimum:
+  - non-pending artifacts rejected as resume input
+  - status transitions enforced
+  - frontmatter version/numeric fields validated
+  - relative artifactDirectory cannot escape config directory
+  - tests and validation pass
+  non_goals:
+  - external install
+  - git push/tag/release
+  - npm publish
+  - active Pi harness install
+  - product spec changes
+  - new command surface
+  invariants:
+  - Durable Continuity Brief first
+  - resume prompt from disk artifact
+  - failed/archived artifacts are not resume input
+  - relative artifactDirectory resolves under CONFIG_DIR_NAME unless absolute
+  allowed_scope:
+  - src/artifact.ts
+  - src/config.ts
+  - test/artifact.test.ts
+  - test/config.test.ts
+  - SpecForge/deploy/campaign evidence
+  drift_risks:
+  - overfitting directive detector beyond spec
+  - changing command behavior outside this slice
+  - claiming release readiness without external smoke
+  stop_conditions:
+  - product contract ambiguity requiring Bernardo decision
+  - validation cannot pass locally
+  - reviewer finds blocker/major
+mini_slice:
+  id: slice-001
+  smallest_e2e_proof: Focused artifact/config tests prove stronger core contract enforcement
+    while full local gates still pass.
+  observable_behavior:
+  - buildResumePrompt accepts only pending valid same-session briefs
+  - replaceBriefStatus permits only product-spec status transitions
+  - loadConfigFromDisk rejects relative artifactDirectory traversal outside CONFIG_DIR_NAME
+  allowed_files_or_areas: *id001
+  forbidden_files_or_areas:
+  - docs/product-spec.md
+  - AGENTS.md
+  - extensions/session-continuity/index.ts
+  - src/handoff.ts
+  - src/status.ts
+  - .git/
+  required_evidence:
+  - kind: command
+    command: npm test
+    path: null
+    check: tests pass
+    required: true
+    proves: new and existing unit tests pass
+  - kind: command
+    command: npm run typecheck
+    path: null
+    check: typecheck passes
+    required: true
+    proves: TypeScript types remain valid
+  - kind: command
+    command: npm pack --dry-run
+    path: null
+    check: pack dry-run passes
+    required: true
+    proves: package contract still packs
+  - kind: artifact
+    command: null
+    path: specforge/runs/RUN-0002/subagents/JUDGE-0001.md
+    check: fresh reviewer pass
+    required: true
+    proves: independent review found no blockers/majors
+  observable_outcome_hints:
+    applies: false
+    trigger_reason: null
+    primary_scenario: unit-level contract hardening
+    artifact_kind: cli_output
+    suggested_artifacts:
+    - CMD logs
+    - JUDGE-0001.md
+    spec_refs:
+    - docs/product-spec.md sections 6-8, 10, 13, 15
+    spec_conformance_checks:
+    - resume prompt from pending disk artifact only
+    - failed/archived artifacts not resume input
+    - relative artifactDirectory under config dir
+    sanity_checks:
+    - no external mutation
+    - runtime source has no campaign terms
+    reviewer_needed: true
+  optional_evidence: []
+  what_not_to_do:
+  - do not edit product spec
+  - do not add cleanup command
+  - do not install into active Pi harness
+  budget:
+    max_files_changed: 8
+    max_new_files: 6
+    max_new_abstractions: 2
+    max_runtime_minutes: 60
+    max_review_rounds: 2
+    max_docs_pages: 1
+    allowed_tool_classes:
+    - read
+    - edit
+    - write
+    - bash
+    - subagent-reviewer
+    - lsp_diagnostics
+    - lens_diagnostics
+turnkey_gap_review:
+  status: clean
+  mode: self_check
+  reviewer_metadata: null
+  actors: []
+  primary_flows:
+  - artifact validation
+  - config validation
+  intent_coverage:
+  - requested_capability: core artifact engine hardening
+    source_ref: campaign ledger EPN-0002
+    disposition: in_slice
+    slice_ref: slice-001
+    defer_ref: null
+    evidence_refs:
+    - docs/product-spec.md
+  usage_walkthrough:
+  - step: Build resume prompt from archived artifact
+    expected: reject
+    gap: null
+    disposition: satisfied
+  - step: Configure artifactDirectory ../outside
+    expected: invalid config disables behavior
+    gap: null
+    disposition: satisfied
+  ux_gaps: []
+  functional_gaps: []
+  permission_gaps: []
+  success_error_state_gaps: []
+  architecture_gaps: []
+  evidence_gaps: []
+  unresolved_gaps: []
+  findings: []
+risk_classification:
+  risk_class: normal
+  risk_floor: normal
+  selected_rigor_mode: normal
+  writer_strategy: inline
+  risk_level: medium
+  signals:
+    api_contract: false
+    generated_artifacts: false
+    source_of_truth: false
+    persistence: true
+    migrations: false
+    auth_security: false
+    frontend_backend_boundary: false
+    forbidden_patterns: false
+    watched_paths_changed_since_context: false
+    required_context_source_stale_or_missing: false
+    multi_slice: false
+    critical_domain: false
+    architecture_context_missing_or_stale: false
+    non_linear_dependencies: false
+  rationale: Artifact/config core affects continuation safety; normal rigor and fresh
+    review required.
+autonomy:
+  mode: single-slice
+  max_slices: 1
+  total_budget:
+    max_files_changed: 8
+    max_runtime_minutes: 60
+dependencies:
+  blocking: []
+handoff:
+  implementation_baton: Run specforge-mini-2-implement-fallback against specforge/scopes/SCOPE-0002/autonomous-implementation-packet.yaml.
+    Persist evidence under specforge/runs/RUN-0002/.

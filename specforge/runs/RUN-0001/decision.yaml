@@ -1,0 +1,83 @@
+schema: specforge.autonomous.decision.v0
+run_id: RUN-0001
+slice_id: slice-001
+decision: stop
+why: Package skeleton and initial local implementation are complete for SCOPE-0001;
+  required local gates pass and prior review blockers/majors were repaired or bounded
+  as release-gated residual risk.
+final_artifacts:
+- specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+- specforge/runs/RUN-0001/autonomous-loop-result.yaml
+- specforge/runs/RUN-0001/final-decision.yaml
+- docs/deploys/deploy-2026-07-07-SCOPE-0001-package-skeleton.md
+- specforge/runs/RUN-0001/subagents/JUDGE-0004.md
+blocker_dispositions: []
+accepted_minors: []
+waivers: []
+residual_risks:
+- Clean Pi install/smoke from a GitHub ref not run; external release/install actions
+  require Bernardo approval.
+- Directive-promotion detection is heuristic and may be expanded in later hardening.
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0014
+  rationale: 'npm test passed: 4 files, 22 tests'
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0015
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0016
+  rationale: pack dry-run passed
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0001/autonomous-loop-result.yaml
+  rationale: product code must not contain loop/campaign/episode concepts; runtime
+    grep returned no matches
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: package.json
+  rationale: package must expose extensions/session-continuity/index.ts
+decision_log_updates:
+- id: D-003
+  supersedes: null
+  decision: Add a local .active lock directory for atomic same-worktree duplicate
+    suppression while preserving per-event lock files.
+  rationale: Per-event unique lock files cannot be atomic single-flight across concurrent
+    event ids by themselves.
+  evidence_refs:
+  - src/handoff.ts
+  - test/handoff.test.ts
+next_slice_id: null
+human_decision: null
+validator_invocations:
+- phase: pre-edit/final-mechanical
+  command: python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+    --fixture . --only packet_readiness,scope_gate,change_classification,evidence_matrix,command_log_monotonicity,review_budget,tool_routing
+    --out specforge/runs/RUN-0001/specforge-mini-validator-report-pre.yaml
+  exit_code: 0
+  status: pass
+  output_ref: specforge/runs/RUN-0001/specforge-mini-validator-report-pre.yaml
+- phase: post-slice
+  command: python3 /home/ubuntu/.claude/skills/specforge-mini-2-implement-fallback/validators/specforge_mini_validator.py
+    --fixture . --out specforge/runs/RUN-0001/specforge-mini-validator-report-post.yaml
+  exit_code: 0
+  status: pass_with_warning
+  output_ref: specforge/runs/RUN-0001/specforge-mini-validator-report-post.yaml
+  warning_rationale: Only skill/snippet/scenario-review warnings remain; final fresh
+    judge JUDGE-0004 and required command evidence cover SCOPE-0001.
+freshness:
+  run_artifact_hash: d779886c006db915017892de176f4fca3ef8e049555ed61565c563cdcfebdec6
+  judge_artifact_hash: 27068a22a2fc1729d0abb675cb48243f441d2caa8760b2433c0d31e18905a82f
+  simplify_artifact_hash: 324c06a1124ed27feab98c274f514aab1457b105460a0438a90382a393065505
+  decided_after_artifacts: true
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T16:29:43.327375Z'

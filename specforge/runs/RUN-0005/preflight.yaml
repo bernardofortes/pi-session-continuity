@@ -1,0 +1,62 @@
+schema: specforge.autonomous.preflight.v0
+packet_ref: specforge/scopes/SCOPE-0005/autonomous-implementation-packet.yaml
+run_id: RUN-0005
+slice_id: slice-001
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: 'npm test passed: 5 files, 33 tests'
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0003
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0004
+  rationale: pack dry-run passed
+- packet_item_ref: mini_slice.required_evidence[3]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0005/subagents/JUDGE-0001.md
+  rationale: fresh reviewer passed with no blockers/majors/minors
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: test/trigger.test.ts
+  rationale: automatic trigger skips disabled untrusted invalid and missing usage
+    states
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: test/trigger.test.ts
+  rationale: automatic trigger fires at configured percentage across model windows
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - infra
+  complexity_track: normal-small
+  escalation_triggers:
+  - external install/tag/release/publish request
+  - active Pi harness install required
+  needs_worktree: false
+  needs_external_review: false
+  needs_observable_review: false
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T17:34:02.329572Z'
+status: pass
+scope_gate:
+  status: pass
+  dirty_forbidden_paths: []
+validator_invocations:
+- phase: pre-edit
+  status: pass
+  output_ref: specforge/runs/RUN-0005/specforge-mini-validator-report-pre.yaml

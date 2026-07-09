@@ -1,0 +1,120 @@
+autonomous_loop_result:
+  schema: specforge.autonomous.loop-result.v0
+  status: completed
+  scope_id: SCOPE-0002
+  run_id: RUN-0002
+  packet_ref: specforge/scopes/SCOPE-0002/autonomous-implementation-packet.yaml
+  deploy_note_ref: docs/deploys/deploy-2026-07-07-SCOPE-0002-core-artifact-engine.md
+  deploy_index_ref: docs/deploys/README.md
+  autonomy:
+    mode: single-slice
+    slices_planned: 1
+    slices_completed: 1
+    stopped_early: false
+    stop_reason: null
+  final_decision: stop
+  slice_results:
+  - slice_id: slice-001
+    decision: stop
+    judge: pass
+    simplify: pass
+  command_refs:
+  - CMD-0003
+  - CMD-0004
+  - CMD-0005
+  required_evidence_reconciliation:
+  - packet_item_ref: mini_slice.required_evidence[0]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0003
+    rationale: 'npm test passed: 4 files, 26 tests'
+  - packet_item_ref: mini_slice.required_evidence[1]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0004
+    rationale: typecheck passed
+  - packet_item_ref: mini_slice.required_evidence[2]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0005
+    rationale: pack dry-run passed
+  - packet_item_ref: mini_slice.required_evidence[3]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: specforge/runs/RUN-0002/subagents/JUDGE-0001.md
+    rationale: fresh reviewer passed with no blockers/majors/minors
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: test/artifact.test.ts
+    rationale: non-pending Continuity Brief artifacts must not be resume prompt input;
+      covered by test/artifact.test.ts
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: test/config.test.ts
+    rationale: relative artifactDirectory must remain under CONFIG_DIR_NAME unless
+      absolute; covered by test/config.test.ts
+  authoritative_command_refs:
+  - CMD-0003
+  - CMD-0004
+  - CMD-0005
+  superseded_command_refs:
+  - CMD-0001
+  flow_metrics:
+    review_rounds: 1
+    judge_rounds: 1
+    simplify_rounds: 0
+    repair_rounds: 0
+    commands_run: 5
+    expensive_commands_run: 3
+    subagent_artifacts: 1
+    elapsed_minutes: 25
+    budget_extensions: 0
+    product_repairs_after_pass: 0
+  residual_risks:
+  - Clean Pi install/manual smoke remains deferred behind external approval.
+  - Directive-promotion detection remains heuristic for later hardening if needed.
+  validation_summary:
+  - 'npm test passed: 26 tests (CMD-0003)'
+  - npm run typecheck passed (CMD-0004)
+  - npm pack --dry-run passed (CMD-0005)
+  - 'Final judge PASS: JUDGE-0001'
+  - 'SpecForge validator: CMD-0007 pass_with_warning with no fail/block'
+  known_answer_cases:
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    case: non-pending Continuity Brief artifacts must not be resume prompt input
+    check_ref: test/artifact.test.ts
+    disposition: satisfied
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    case: relative artifactDirectory must remain under CONFIG_DIR_NAME unless absolute
+    check_ref: test/config.test.ts
+    disposition: satisfied
+  unavailable_or_human_only:
+  - packet_item_ref: evidence_plan.unavailable_or_human_only[0]
+    reason: clean GitHub-ref install smoke requires external approval
+    approved_replacement_ref: local npm pack --dry-run
+  finalization_consistency:
+    status: pass
+    findings:
+    - CMD-0007 post validator pass_with_warning; warnings are non-product process
+      warnings covered by JUDGE-0001
+  execution_metadata:
+    timestamps:
+      finished_at: '2026-07-07T17:08:56.602139Z'
+  change_class:
+    size: small
+    risk: normal
+    surface:
+    - infra
+    complexity_track: normal-small
+    escalation_triggers:
+    - new product contract ambiguity
+    - external install/tag/release/publish request
+    - active Pi harness install required
+    needs_worktree: false
+    needs_external_review: false
+    needs_observable_review: false
+    needs_full_validation: true
+    needs_specialized_review: false
+    needs_graph_or_dependency_context: false

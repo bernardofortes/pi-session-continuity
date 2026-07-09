@@ -1,0 +1,230 @@
+schema: specforge.autonomous.run.v0
+run_id: RUN-0010
+slice_id: slice-001
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: artifact
+  surface: docs
+  disposition: satisfied
+  evidence_ref: docs/product-spec.md
+  rationale: spec now requires TUI panel/status UX and interactive settings menu
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: tests updated for config persistence, human-readable formatting, notification
+    severity; observable UI behavior review covered by JUDGE-0001
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  surface: backend
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: 'npm test passed: 43 tests'
+- packet_item_ref: mini_slice.required_evidence[3]
+  kind: command
+  surface: backend
+  disposition: satisfied
+  evidence_ref: CMD-0003
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[4]
+  kind: command
+  surface: release
+  disposition: satisfied
+  evidence_ref: CMD-0007
+  rationale: final pack dry-run passed after deploy note/index
+- packet_item_ref: mini_slice.required_evidence[5]
+  kind: artifact
+  surface: review
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0010/subagents/JUDGE-0001.md
+  rationale: fresh reviewer passed with no blockers/majors/minors
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  surface: ui
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0010/subagents/JUDGE-0001.md
+  rationale: /continuity settings show remains textual fallback
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  surface: ui
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0010/subagents/JUDGE-0001.md
+  rationale: /continuity settings opens interactive menu when UI is available
+- packet_item_ref: evidence_plan.known_answer_cases[2]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: settings notifications are not warning solely because disabled reason
+    is none
+- packet_item_ref: evidence_plan.known_answer_cases[3]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: triggerAtPercent can be changed to 75 from inside Pi
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - ui
+  - docs
+  complexity_track: normal-small
+  escalation_triggers:
+  - new Pi API uncertainty
+  - settings persistence could corrupt config
+  - core handoff invariant touched
+  needs_worktree: false
+  needs_external_review: true
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-08T09:32:29.080108Z'
+status: completed
+changed_files:
+- docs/product-spec.md
+- README.md
+- src/config.ts
+- src/status.ts
+- extensions/session-continuity/index.ts
+- test/config.test.ts
+- test/status.test.ts
+- docs/deploys/README.md
+- docs/deploys/deploy-2026-07-08-SCOPE-0010-ux-settings-menu.md
+- specforge/scopes/SCOPE-0010/autonomous-implementation-packet.yaml
+- specforge/scopes/SCOPE-0010/decision-log.yaml
+produced_artifacts:
+- docs/deploys/deploy-2026-07-08-SCOPE-0010-ux-settings-menu.md
+- specforge/runs/RUN-0010/subagents/JUDGE-0001.md
+command_evidence:
+- id: CMD-0001
+  command: pre-edit validator
+  exit_code: 1
+  required: false
+  tier: preflight
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0001.log
+  summary: initial packet needed repair; superseded
+  diagnosis: packet_authoring_issue
+  next_action: repaired packet fields before product implementation and reran validator
+    as CMD-0006
+- id: CMD-0002
+  command: npm test
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0002.log
+  summary: 'Vitest passed: 6 files, 43 tests.'
+- id: CMD-0003
+  command: npm run typecheck
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0003.log
+  summary: tsc --noEmit passed.
+- id: CMD-0004
+  command: npm pack --dry-run
+  exit_code: 0
+  required: false
+  tier: release
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0004.log
+  summary: initial pack passed; superseded by CMD-0007 after deploy note.
+- id: CMD-0005
+  command: forbidden runtime terminology grep
+  exit_code: 0
+  required: true
+  tier: boundary
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0005.log
+  summary: no forbidden runtime product terms found.
+- id: CMD-0006
+  command: validator after packet repair before final artifacts
+  exit_code: 1
+  required: false
+  tier: preflight
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0006.log
+  summary: packet readiness and scope passed; final-artifact failures expected before
+    finalization.
+  diagnosis: expected_pre_final_artifact_absence
+  next_action: wrote final artifacts and reran post validator as CMD-0008/CMD-0009
+- id: CMD-0007
+  command: npm pack --dry-run
+  exit_code: 0
+  required: true
+  tier: release-final
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0007.log
+  summary: final dry-run package passed with SCOPE-0010 deploy note.
+- id: CMD-0008
+  command: post-slice validator
+  exit_code: 1
+  required: false
+  tier: post-validator
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0008.log
+  summary: first post validator found finalization/evidence bookkeeping gaps; superseded
+    by CMD-0009
+  diagnosis: finalization_bookkeeping_gap
+  next_action: added exact known-answer mappings, failure diagnoses, and pass finalization
+    status before rerun
+- id: CMD-0009
+  command: post-slice validator
+  exit_code: 1
+  required: false
+  tier: post-validator
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0009.log
+  summary: post validator found unresolved evidence refs; superseded by CMD-0010
+  diagnosis: evidence_ref_bookkeeping_gap
+  next_action: rewrote reconciliation to cite concrete command/artifact refs and reran
+    validator
+- id: CMD-0010
+  command: post-slice validator
+  exit_code: 0
+  required: true
+  tier: post-validator
+  output_ref: specforge/runs/RUN-0010/commands/CMD-0010.log
+  summary: post validator pass_with_warning; no fail/block
+authoritative_command_refs:
+- CMD-0002
+- CMD-0003
+- CMD-0005
+- CMD-0007
+- CMD-0010
+superseded_command_refs:
+- CMD-0001
+- CMD-0004
+- CMD-0006
+- CMD-0008
+- CMD-0009
+known_answer_cases:
+- case: /continuity settings show remains textual fallback
+  check_ref: extensions/session-continuity/index.ts
+  disposition: satisfied
+- case: /continuity settings opens interactive menu when UI is available
+  check_ref: extensions/session-continuity/index.ts
+  disposition: satisfied
+- case: settings notifications are not warning solely because disabled reason is none
+  check_ref: test/status.test.ts
+  disposition: satisfied
+- case: triggerAtPercent can be changed to 75 from inside Pi
+  check_ref: test/config.test.ts
+  disposition: satisfied
+unavailable_or_human_only:
+- reason: active-harness install, Pi Continue removal, and external release validation
+    require explicit approval
+  approved_replacement_ref: local tests plus code review
+deviations:
+- Manual live TUI navigation deferred for Bernardo dogfood; reviewer inspected code
+  path.
+non_goal_violations: []
+flow_metrics:
+  review_rounds: 1
+  judge_rounds: 1
+  simplify_rounds: 0
+  repair_rounds: 1
+  commands_run: 7
+  expensive_commands_run: 3
+  subagent_artifacts: 1
+  elapsed_minutes: 35
+  budget_extensions: 0
+  product_repairs_after_pass: 0

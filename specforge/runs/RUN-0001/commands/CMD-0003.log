@@ -1,0 +1,25 @@
+npm notice
+npm notice 📦  pi-session-continuity@0.1.0
+npm notice Tarball Contents
+npm notice 649B CHANGELOG.md
+npm notice 1.1kB LICENSE
+npm notice 4.1kB README.md
+npm notice 27.5kB docs/product-spec.md
+npm notice 4.5kB extensions/session-continuity/index.ts
+npm notice 1.0kB package.json
+npm notice 10.6kB src/artifact.ts
+npm notice 6.1kB src/config.ts
+npm notice 1.9kB src/constants.ts
+npm notice 10.7kB src/handoff.ts
+npm notice 2.4kB src/status.ts
+npm notice Tarball Details
+npm notice name: pi-session-continuity
+npm notice version: 0.1.0
+npm notice filename: pi-session-continuity-0.1.0.tgz
+npm notice package size: 20.3 kB
+npm notice unpacked size: 70.5 kB
+npm notice shasum: fb8355130eb832d7fe3bb954dce8fd17b63b45a9
+npm notice integrity: sha512-YbWuVSBbe67cr[...]BxYyS/kAWGZqg==
+npm notice total files: 11
+npm notice
+pi-session-continuity-0.1.0.tgz

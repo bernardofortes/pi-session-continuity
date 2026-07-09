@@ -1,0 +1,50 @@
+{
+  "name": "pi-session-continuity",
+  "version": "0.1.0",
+  "description": "Durable disk-backed session continuity handoffs for Pi.",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "session-continuity",
+    "continuity"
+  ],
+  "files": [
+    "extensions",
+    "src",
+    "docs",
+    "scripts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/session-continuity/index.ts"
+    ]
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "smoke:manual": "bash scripts/smoke/manual-checks.sh"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

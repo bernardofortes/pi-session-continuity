@@ -1,0 +1,174 @@
+status: blocked
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0011
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0011/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: warning
+  validator: skill_structural
+  findings:
+  - severity: warning
+    code: skill_path_not_provided
+    evidence: No --skill path was provided.
+    recommended_action: pass --skill to validate SpecForge Mini skill structure
+- status: warning
+  validator: yaml_snippet
+  findings:
+  - severity: warning
+    code: no_snippet_sources
+    evidence: No skill/planning doc supplied for fenced YAML snippet parsing.
+    recommended_action: pass --skill and/or --planning-doc when validating docs
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: fail
+  validator: scope_gate
+  findings:
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: .gitignore'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: .gitignore
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: CHANGELOG.md'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: CHANGELOG.md
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: LICENSE'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: LICENSE
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: README.md'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: README.md
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: docs/release-readiness/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: docs/release-readiness/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: extensions/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: extensions/
+  - severity: major
+    code: unauthorized_lockfile_path
+    evidence: 'Dirty or changed special path lacks explicit authorization lockfile_allowed:
+      package-lock.json'
+    recommended_action: add packet authorization, restore path, or request waiver
+    path: package-lock.json
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: package-lock.json'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: package-lock.json
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: package.json'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: package.json
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: scripts/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: scripts/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: src/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: src/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: test/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: test/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: tsconfig.json'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: tsconfig.json
+- status: pass
+  validator: change_classification
+  findings: []
+- status: fail
+  validator: evidence_matrix
+  findings:
+  - severity: major
+    code: surface_evidence_missing
+    evidence: surface=ui has no recognizable evidence in evidence-bearing artifact
+      fields.
+    recommended_action: add command/artifact evidence or required_evidence_reconciliation
+      for this surface
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: pass
+  validator: stale_approval
+  findings: []
+- status: pass
+  validator: review_budget
+  findings: []
+- status: pass
+  validator: prompt_contract
+  findings: []
+- status: pass
+  validator: tool_routing
+  findings: []
+- status: pass
+  validator: flow_metrics
+  findings: []
+- status: pass
+  validator: yaml_artifact_parse
+  findings: []
+- status: blocked
+  validator: finalization_consistency
+  findings:
+  - severity: blocker
+    code: finalization_consistency_not_pass
+    evidence: finalization_consistency.status='pending-post-validator'
+    recommended_action: repair consistency gate before stop
+  - severity: major
+    code: post_validator_output_ref_missing
+    evidence: 'output_ref does not exist: specforge/runs/RUN-0011/specforge-mini-validator-report-post.yaml'
+    recommended_action: write validator command log or correct output_ref
+    path: specforge/runs/RUN-0011/specforge-mini-validator-report-post.yaml
+  - severity: major
+    code: post_validator_output_ref_missing
+    evidence: 'output_ref does not exist: specforge/runs/RUN-0011/specforge-mini-validator-report-post.yaml'
+    recommended_action: write validator command log or correct output_ref
+    path: specforge/runs/RUN-0011/specforge-mini-validator-report-post.yaml
+  - severity: major
+    code: post_validator_output_ref_missing
+    evidence: 'output_ref does not exist: specforge/runs/RUN-0011/specforge-mini-validator-report-post.yaml'
+    recommended_action: write validator command log or correct output_ref
+    path: specforge/runs/RUN-0011/specforge-mini-validator-report-post.yaml
+- status: warning
+  validator: documentation_proportionality
+  findings:
+  - severity: warning
+    code: deploy_note_above_track_target
+    evidence: track=trivial-light, lines=19, target<= 15
+    recommended_action: compress if detail duplicates run artifacts
+    path: docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+  - severity: minor
+    code: deploy_note_logs_not_linked
+    evidence: Deploy note mentions command refs without specforge/runs link.
+    recommended_action: link run artifacts rather than duplicating raw logs
+    path: docs/deploys/deploy-2026-07-08-SCOPE-0011-compact-status-footer.md
+- status: warning
+  validator: scenario_review
+  findings:
+  - severity: warning
+    code: scenario_review_artifact_missing
+    evidence: No scenario review artifact found in the active run dir.
+    recommended_action: write scenario matrix and independent review before GOAL MET/final
+      stop
+summary:
+  pass: 9
+  warning: 4
+  fail: 2
+  blocked: 1

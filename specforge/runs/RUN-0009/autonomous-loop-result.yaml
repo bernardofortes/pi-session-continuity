@@ -1,0 +1,134 @@
+autonomous_loop_result:
+  schema: specforge.autonomous.loop-result.v0
+  status: completed
+  scope_id: SCOPE-0009
+  run_id: RUN-0009
+  packet_ref: specforge/scopes/SCOPE-0009/autonomous-implementation-packet.yaml
+  deploy_note_ref: docs/deploys/deploy-2026-07-07-SCOPE-0009-dogfood-hardening-local-readiness.md
+  deploy_index_ref: docs/deploys/README.md
+  readiness_report_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+  autonomy:
+    mode: single-slice
+    slices_planned: 1
+    slices_completed: 1
+    stopped_early: false
+  final_decision: stop
+  local_v1_readiness: accepted
+  public_release_readiness: deferred_external_validation
+  slice_results:
+  - slice_id: slice-001
+    decision: stop
+    judge: pass
+    simplify: pass
+  command_refs:
+  - CMD-0002
+  - CMD-0003
+  - CMD-0004
+  - CMD-0008
+  - CMD-0011
+  required_evidence_reconciliation:
+  - packet_item_ref: mini_slice.required_evidence[0]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0002
+    rationale: 'npm test passed: 6 files, 40 tests'
+  - packet_item_ref: mini_slice.required_evidence[1]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0003
+    rationale: typecheck passed
+  - packet_item_ref: evidence_plan.required[2]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0004
+    rationale: manual smoke checklist remains runnable
+  - packet_item_ref: mini_slice.required_evidence[2]
+    kind: command
+    disposition: satisfied
+    evidence_ref: CMD-0011
+    rationale: final current-tree pack dry-run passed after readiness/deploy/ledger
+      docs
+  - packet_item_ref: mini_slice.required_evidence[3]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: specforge/runs/RUN-0009/subagents/JUDGE-0001.md
+    rationale: fresh reviewer passed with no blockers/majors; process minors addressed
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+    rationale: all nine local episodes have evidence or documented deferrals
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+    rationale: remaining risks are documented
+  - packet_item_ref: evidence_plan.known_answer_cases[2]
+    kind: artifact
+    disposition: satisfied
+    evidence_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+    rationale: external validation decision is separated from local readiness
+  authoritative_command_refs:
+  - CMD-0002
+  - CMD-0003
+  - CMD-0004
+  - CMD-0008
+  - CMD-0011
+  superseded_command_refs:
+  - CMD-0005
+  - CMD-0006
+  - CMD-0007
+  flow_metrics:
+    review_rounds: 1
+    judge_rounds: 1
+    simplify_rounds: 0
+    repair_rounds: 1
+    commands_run: 8
+    expensive_commands_run: 5
+    subagent_artifacts: 1
+    elapsed_minutes: 25
+    budget_extensions: 0
+    product_repairs_after_pass: 0
+  residual_risks:
+  - Clean GitHub-ref install/smoke is not performed and remains required before public
+    tag/announcement.
+  - External install/tag/release/publish/push/upload require separate explicit Bernardo
+    approval.
+  validation_summary:
+  - 'npm test passed: 40 tests (CMD-0002)'
+  - npm run typecheck passed (CMD-0003)
+  - npm run smoke:manual passed (CMD-0004)
+  - final npm pack --dry-run passed (CMD-0007)
+  - final forbidden runtime term grep passed (CMD-0008)
+  - 'Final judge PASS: JUDGE-0001'
+  - 'SpecForge validator: CMD-0010 pass_with_warning with no fail/block'
+  - final current-tree npm pack --dry-run passed (CMD-0011)
+  known_answer_cases:
+  - packet_item_ref: evidence_plan.known_answer_cases[0]
+    case: all nine local episodes have evidence or documented deferrals
+    check_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+    disposition: satisfied
+  - packet_item_ref: evidence_plan.known_answer_cases[1]
+    case: remaining risks are documented
+    check_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+    disposition: satisfied
+  - packet_item_ref: evidence_plan.known_answer_cases[2]
+    case: external validation decision is separated from local readiness
+    check_ref: docs/release-readiness/local-v1-readiness-2026-07-07.md
+    disposition: satisfied
+  unavailable_or_human_only:
+  - reason: clean GitHub-ref install, tag, release, publish, push, and external smoke
+      require explicit approval and are deferred
+    approved_replacement_ref: local readiness gates and report
+  finalization_consistency:
+    status: pass
+    findings:
+    - CMD-0010 post validator pass_with_warning; warnings are non-product process
+      warnings covered by JUDGE-0001
+  execution_metadata:
+    timestamps:
+      finished_at: '2026-07-07T18:06:03.743567Z'
+  flow_inefficiency: commands_run exceeded normal-small target because final closure
+    required initial gates, post-review ledger/deploy repairs, final pack/grep after
+    docs changed, and validator self-reference rerun; stop non-blocking retries after
+    final validator.

@@ -1,0 +1,7 @@
+node_modules/
+.pi-subagents/
+*.tgz
+.pi/session-continuity/
+.pi/continue/
+coverage/
+dist/

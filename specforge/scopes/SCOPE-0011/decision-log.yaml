@@ -1,0 +1,5 @@
+decisions:
+- date: '2026-07-08'
+  decision: Repair truncated widget UX
+  basis: Bernardo live dogfood feedback
+  status: decided

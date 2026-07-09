@@ -1,0 +1,199 @@
+status: fail
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0010
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0010/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: warning
+  validator: skill_structural
+  findings:
+  - severity: warning
+    code: skill_path_not_provided
+    evidence: No --skill path was provided.
+    recommended_action: pass --skill to validate SpecForge Mini skill structure
+- status: warning
+  validator: yaml_snippet
+  findings:
+  - severity: warning
+    code: no_snippet_sources
+    evidence: No skill/planning doc supplied for fenced YAML snippet parsing.
+    recommended_action: pass --skill and/or --planning-doc when validating docs
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: pass
+  validator: scope_gate
+  findings: []
+- status: pass
+  validator: change_classification
+  findings: []
+- status: fail
+  validator: evidence_matrix
+  findings:
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[10] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[11] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[12] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[23] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[24] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[25] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[36] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[37] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[38] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[49] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[50] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[51] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[62] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[63] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[64] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[95] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[96] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+  - severity: major
+    code: reconciled_evidence_ref_unresolved
+    evidence: required_evidence_reconciliation[97] evidence_ref='JUDGE-0001/CMD-0002/extensions'
+      does not resolve to known command/artifact evidence.
+    recommended_action: cite an existing command log, artifact, or produced/final
+      artifact ref
+    path: JUDGE-0001/CMD-0002/extensions
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: pass
+  validator: stale_approval
+  findings: []
+- status: pass
+  validator: review_budget
+  findings: []
+- status: pass
+  validator: prompt_contract
+  findings: []
+- status: pass
+  validator: tool_routing
+  findings: []
+- status: pass
+  validator: flow_metrics
+  findings: []
+- status: pass
+  validator: yaml_artifact_parse
+  findings: []
+- status: pass
+  validator: finalization_consistency
+  findings: []
+- status: pass
+  validator: documentation_proportionality
+  findings: []
+- status: warning
+  validator: scenario_review
+  findings:
+  - severity: warning
+    code: scenario_review_artifact_missing
+    evidence: No scenario review artifact found in the active run dir.
+    recommended_action: write scenario matrix and independent review before GOAL MET/final
+      stop
+summary:
+  pass: 12
+  warning: 3
+  fail: 1
+  blocked: 0

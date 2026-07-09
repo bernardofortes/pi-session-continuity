@@ -1,0 +1,8 @@
+schema: specforge.decision-log.v0
+scope_id: SCOPE-0006
+decisions:
+- id: D-001
+  decision: Harden compaction through handoff tests only unless code gap appears
+  rationale: Current implementation likely already respects product invariant.
+timestamps:
+  created_at: '2026-07-07T17:36:02.727056Z'

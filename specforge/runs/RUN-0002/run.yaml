@@ -1,0 +1,122 @@
+schema: specforge.autonomous.run.v0
+run_id: RUN-0002
+slice_id: slice-001
+status: completed
+changed_files:
+- .gitignore
+- src/artifact.ts
+- src/config.ts
+- test/artifact.test.ts
+- test/config.test.ts
+- docs/deploys/README.md
+- docs/deploys/deploy-2026-07-07-SCOPE-0002-core-artifact-engine.md
+- specforge/scopes/SCOPE-0002/autonomous-implementation-packet.yaml
+- specforge/scopes/SCOPE-0002/decision-log.yaml
+produced_artifacts:
+- docs/deploys/deploy-2026-07-07-SCOPE-0002-core-artifact-engine.md
+- specforge/runs/RUN-0002/subagents/JUDGE-0001.md
+command_evidence:
+- id: CMD-0002
+  command: pre-edit validator subset
+  exit_code: 0
+  required: true
+  tier: preflight
+  output_ref: specforge/runs/RUN-0002/commands/CMD-0002.log
+  summary: validator subset passed after scope repair
+- id: CMD-0003
+  command: npm test
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0002/commands/CMD-0003.log
+  summary: 'Vitest passed: 4 files, 26 tests.'
+- id: CMD-0004
+  command: npm run typecheck
+  exit_code: 0
+  required: true
+  tier: full
+  output_ref: specforge/runs/RUN-0002/commands/CMD-0004.log
+  summary: tsc --noEmit passed.
+- id: CMD-0005
+  command: npm pack --dry-run
+  exit_code: 0
+  required: true
+  tier: release
+  output_ref: specforge/runs/RUN-0002/commands/CMD-0005.log
+  summary: Dry-run package contains 13 files, package size 23.2 kB.
+authoritative_command_refs:
+- CMD-0003
+- CMD-0004
+- CMD-0005
+superseded_command_refs:
+- CMD-0001
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0003
+  rationale: 'npm test passed: 4 files, 26 tests'
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0004
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  disposition: satisfied
+  evidence_ref: CMD-0005
+  rationale: pack dry-run passed
+- packet_item_ref: mini_slice.required_evidence[3]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0002/subagents/JUDGE-0001.md
+  rationale: fresh reviewer passed with no blockers/majors/minors
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: test/artifact.test.ts
+  rationale: non-pending Continuity Brief artifacts must not be resume prompt input;
+    covered by test/artifact.test.ts
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  disposition: satisfied
+  evidence_ref: test/config.test.ts
+  rationale: relative artifactDirectory must remain under CONFIG_DIR_NAME unless absolute;
+    covered by test/config.test.ts
+known_answer_cases:
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  case: non-pending Continuity Brief artifacts must not be resume prompt input
+  check_ref: test/artifact.test.ts
+  disposition: satisfied
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  case: relative artifactDirectory must remain under CONFIG_DIR_NAME unless absolute
+  check_ref: test/config.test.ts
+  disposition: satisfied
+unavailable_or_human_only:
+- packet_item_ref: evidence_plan.unavailable_or_human_only[0]
+  reason: clean GitHub-ref install smoke requires external approval
+  approved_replacement_ref: local npm pack --dry-run
+deviations: []
+non_goal_violations: []
+flow_metrics:
+  review_rounds: 1
+  judge_rounds: 1
+  simplify_rounds: 0
+  repair_rounds: 0
+  commands_run: 5
+  expensive_commands_run: 3
+  subagent_artifacts: 1
+  elapsed_minutes: 25
+  budget_extensions: 0
+  product_repairs_after_pass: 0
+review_snapshots:
+- id: SNAP-0001
+  diff_hash: uncommitted-run-0002
+  command_refs:
+  - CMD-0003
+  - CMD-0004
+  - CMD-0005
+  stale_if_product_changes: true
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-07T17:08:56.602139Z'

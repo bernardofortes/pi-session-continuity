@@ -1,0 +1,6 @@
+decisions:
+- date: '2026-07-08'
+  decision: Proceed with UX settings menu polish as EPN-0010
+  basis: Bernardo dogfood feedback and explicit request to write spec and implement
+    via campaign/specforge fallback
+  status: decided

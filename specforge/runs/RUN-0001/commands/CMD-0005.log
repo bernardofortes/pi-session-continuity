@@ -1,0 +1,153 @@
+status: fail
+schema: specforge.mini.validator-report.v0
+fixture: /home/ubuntu/pi-session-continuity
+run_dir: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0001
+packet: /home/ubuntu/pi-session-continuity/specforge/scopes/SCOPE-0001/autonomous-implementation-packet.yaml
+skill: null
+validators:
+- status: warning
+  validator: skill_structural
+  findings:
+  - severity: warning
+    code: skill_path_not_provided
+    evidence: No --skill path was provided.
+    recommended_action: pass --skill to validate SpecForge Mini skill structure
+- status: warning
+  validator: yaml_snippet
+  findings:
+  - severity: warning
+    code: no_snippet_sources
+    evidence: No skill/planning doc supplied for fenced YAML snippet parsing.
+    recommended_action: pass --skill and/or --planning-doc when validating docs
+- status: pass
+  validator: packet_readiness
+  findings: []
+- status: warning
+  validator: scope_gate
+  findings:
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: .orchestrate/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: .orchestrate/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: extensions/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: extensions/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: node_modules/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: node_modules/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: package-lock.json'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: package-lock.json
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: scripts/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: scripts/
+  - severity: warning
+    code: dirty_path_outside_allowed_scope
+    evidence: 'Dirty path is outside allowed scope: specforge/'
+    recommended_action: confirm it is pre-existing/unrelated or isolate with worktree
+    path: specforge/
+- status: warning
+  validator: change_classification
+  findings:
+  - severity: minor
+    code: change_class_field_missing
+    evidence: change_class.needs_worktree is missing.
+    recommended_action: populate the classifier field
+  - severity: minor
+    code: change_class_field_missing
+    evidence: change_class.needs_external_review is missing.
+    recommended_action: populate the classifier field
+  - severity: minor
+    code: change_class_field_missing
+    evidence: change_class.needs_observable_review is missing.
+    recommended_action: populate the classifier field
+  - severity: minor
+    code: change_class_field_missing
+    evidence: change_class.needs_full_validation is missing.
+    recommended_action: populate the classifier field
+  - severity: minor
+    code: change_class_field_missing
+    evidence: change_class.needs_specialized_review is missing.
+    recommended_action: populate the classifier field
+  - severity: minor
+    code: change_class_field_missing
+    evidence: change_class.needs_graph_or_dependency_context is missing.
+    recommended_action: populate the classifier field
+- status: pass
+  validator: evidence_matrix
+  findings: []
+- status: pass
+  validator: command_log_monotonicity
+  findings: []
+- status: pass
+  validator: stale_approval
+  findings: []
+- status: pass
+  validator: review_budget
+  findings: []
+- status: warning
+  validator: prompt_contract
+  findings:
+  - severity: warning
+    code: prompt_contract_not_exercised
+    evidence: No subagent artifacts or prompt contract refs found.
+    recommended_action: no action if trivial-light; otherwise record contract id/version
+- status: pass
+  validator: tool_routing
+  findings: []
+- status: fail
+  validator: flow_metrics
+  findings:
+  - severity: major
+    code: flow_metrics_missing
+    evidence: No flow_metrics found in run/final artifacts.
+    recommended_action: persist flow_metrics before decision stop/next-slice
+- status: pass
+  validator: yaml_artifact_parse
+  findings: []
+- status: fail
+  validator: finalization_consistency
+  findings:
+  - severity: major
+    code: loop_result_missing
+    evidence: autonomous-loop-result.yaml missing or empty.
+    recommended_action: write final loop result artifact
+    path: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0001/autonomous-loop-result.yaml
+  - severity: major
+    code: final_decision_missing
+    evidence: final-decision.yaml missing or empty.
+    recommended_action: write final decision artifact
+    path: /home/ubuntu/pi-session-continuity/specforge/runs/RUN-0001/final-decision.yaml
+  - severity: major
+    code: flow_metrics_missing_from_final_artifacts
+    evidence: Neither final artifact contains flow_metrics.
+    recommended_action: persist flow metrics in final artifacts
+- status: fail
+  validator: documentation_proportionality
+  findings:
+  - severity: major
+    code: deploy_note_missing
+    evidence: No deploy note ref for track='normal-complex'.
+    recommended_action: write proportional deploy note
+- status: warning
+  validator: scenario_review
+  findings:
+  - severity: warning
+    code: scenario_review_artifact_missing
+    evidence: No scenario review artifact found in the active run dir.
+    recommended_action: write scenario matrix and independent review before GOAL MET/final
+      stop
+summary:
+  pass: 7
+  warning: 6
+  fail: 3
+  blocked: 0

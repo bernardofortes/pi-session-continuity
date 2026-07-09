@@ -1,0 +1,109 @@
+schema: specforge.autonomous.simplify.v0
+run_id: RUN-0010
+slice_id: slice-001
+required_evidence_reconciliation:
+- packet_item_ref: mini_slice.required_evidence[0]
+  kind: artifact
+  surface: docs
+  disposition: satisfied
+  evidence_ref: docs/product-spec.md
+  rationale: spec now requires TUI panel/status UX and interactive settings menu
+- packet_item_ref: mini_slice.required_evidence[1]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: tests updated for config persistence, human-readable formatting, notification
+    severity
+- packet_item_ref: mini_slice.required_evidence[2]
+  kind: command
+  surface: backend
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: 'npm test passed: 43 tests'
+- packet_item_ref: mini_slice.required_evidence[3]
+  kind: command
+  surface: backend
+  disposition: satisfied
+  evidence_ref: CMD-0003
+  rationale: typecheck passed
+- packet_item_ref: mini_slice.required_evidence[4]
+  kind: command
+  surface: release
+  disposition: satisfied
+  evidence_ref: CMD-0007
+  rationale: final pack dry-run passed after deploy note/index
+- packet_item_ref: mini_slice.required_evidence[5]
+  kind: artifact
+  surface: review
+  disposition: satisfied
+  evidence_ref: specforge/runs/RUN-0010/subagents/JUDGE-0001.md
+  rationale: fresh reviewer passed with no blockers/majors/minors
+- packet_item_ref: evidence_plan.known_answer_cases[0]
+  kind: artifact
+  surface: ui
+  disposition: satisfied
+  evidence_ref: extensions/session-continuity/index.ts
+  rationale: /continuity settings show remains textual fallback
+- packet_item_ref: evidence_plan.known_answer_cases[1]
+  kind: artifact
+  surface: ui
+  disposition: satisfied
+  evidence_ref: extensions/session-continuity/index.ts
+  rationale: /continuity settings opens interactive menu in TUI
+- packet_item_ref: evidence_plan.known_answer_cases[2]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: normal settings output notification level stays info when body contains
+    disabled reason none
+- packet_item_ref: evidence_plan.known_answer_cases[3]
+  kind: command
+  surface: ui
+  disposition: satisfied
+  evidence_ref: CMD-0002
+  rationale: config write helper persists triggerAtPercent 75
+change_class:
+  size: small
+  risk: normal
+  surface:
+  - ui
+  - docs
+  complexity_track: normal-small
+  escalation_triggers:
+  - new Pi API uncertainty
+  - settings persistence could corrupt config
+  - core handoff invariant touched
+  needs_worktree: false
+  needs_external_review: true
+  needs_observable_review: true
+  needs_full_validation: true
+  needs_specialized_review: false
+  needs_graph_or_dependency_context: false
+execution_metadata:
+  timestamps:
+    finished_at: '2026-07-08T09:32:29.080108Z'
+source:
+  kind: self_check
+  evidence_checked:
+  - focused diff
+  - JUDGE-0001
+overengineering_found: false
+scope_invented: false
+premature_abstractions: []
+configuration_bloat: []
+documentation_bloat: []
+wrong_home_or_layer: []
+duplicate_source_of_truth: []
+simplification_required: false
+blockers: []
+majors: []
+minors: []
+issue_counts:
+  blockers: 0
+  majors: 0
+  minors: 0
+required_removals_or_repairs: []
+rationale_if_no_simplification: Small command UX/config persistence slice; no new
+  product architecture.
