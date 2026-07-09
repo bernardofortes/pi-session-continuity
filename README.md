@@ -1,6 +1,22 @@
 # Pi Session Continuity
 
-Pi Session Continuity is a Pi package that creates durable, explicit handoffs for long-running work. Before it queues any continuation prompt, it writes and validates an on-disk **Continuity Brief** and then injects the resume prompt from that saved file.
+**Keep long-running Pi coding sessions moving without losing the plot.**
+
+Pi Session Continuity exists so extended agentic coding work can survive the boring failure modes: a context window fills up, a session reloads, a compaction happens, or the next agent has to recover the state of the task. Its job is not to be clever, visible, or exciting. Its job is to be dull enough that you forget it is there — until the moment it quietly gives the next session a reliable handoff.
+
+Only after that intent is clear does the mechanism matter: Pi Session Continuity is a Pi package that writes a structured **Continuity Brief** to disk before it queues any resume prompt. The continuation is driven from the saved artifact, not from fragile in-memory state.
+
+## Why this exists
+
+Long-running agentic coding work often fails at the worst possible boundary: the session is full, the model is tired, the transcript is noisy, and the next prompt has to reconstruct what matters. A normal compaction can reduce tokens, but compaction is still an in-session memory-management step. If the handoff itself fails, or if a reload happens at the wrong time, the recovery story can become ambiguous.
+
+Pi Session Continuity turns that risky boundary into a small, repeatable reliability step:
+
+1. synthesize the current state of the work;
+2. write and validate a disk-backed Continuity Brief;
+3. re-read the saved file;
+4. queue the resume prompt from that exact file;
+5. use native compaction only as token hygiene after the durable path is safe.
 
 Core invariant:
 
@@ -9,6 +25,18 @@ Durable Continuity Brief first.
 Resume prompt is injected from the disk artifact.
 Compaction is token hygiene, not the source of continuity.
 ```
+
+## Why this approach is better for continuous coding
+
+Pi Session Continuity is not trying to be magical or invisible. It is intentionally explicit:
+
+- **Recoverable:** the important state is in a local Markdown artifact that can be inspected, archived, copied, or used by a future Pi session.
+- **Auditable:** every handoff records task, done criteria, constraints, files, validation evidence, open questions, and next actions in a stable structure.
+- **Safer than memory-only continuation:** the resume prompt is generated from the artifact on disk, so continuity does not depend on the agent remembering what it meant to say.
+- **Compatible with compaction:** compaction remains useful, but it is no longer the source of truth for continuity.
+- **Good for unattended work:** if a long task reaches a context threshold, the package can create a visible handoff instead of silently drifting or truncating the useful state.
+
+The result is a conservative infrastructure layer for extended Pi sessions: less clever, more durable, and easier to debug.
 
 ## Installation
 

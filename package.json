@@ -1,15 +1,23 @@
 {
   "name": "pi-session-continuity",
   "version": "0.1.0",
-  "description": "Durable disk-backed session continuity handoffs for Pi.",
+  "description": "Keep long-running Pi coding sessions recoverable with dull, durable handoffs.",
   "license": "MIT",
   "type": "module",
   "keywords": [
     "pi-package",
     "pi-extension",
     "session-continuity",
-    "continuity"
+    "continuity",
+    "checkpoint",
+    "long-running-sessions",
+    "coding-agents"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bernardofortes/pi-session-continuity.git"
+  },
+  "homepage": "https://github.com/bernardofortes/pi-session-continuity#readme",
   "files": [
     "extensions",
     "src",
