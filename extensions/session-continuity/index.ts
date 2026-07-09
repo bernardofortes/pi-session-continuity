@@ -260,7 +260,7 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		},
 		handler: async (args, ctx) => {
 			const tokens = args.trim().split(/\s+/).filter(Boolean);
-			const subcommand = tokens[0] ?? "status";
+			const subcommand = tokens[0] ?? "settings";
 			const config = await refreshConfig(ctx);
 
 			if (subcommand === "status") {

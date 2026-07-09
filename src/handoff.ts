@@ -27,6 +27,7 @@ import {
 	ensureArtifactDirectories,
 	markBriefInjected,
 	normalizeSynthesizedBody,
+	pruneArchivedBriefs,
 	readTextFile,
 	serializeBrief,
 	validateBrief,
@@ -39,6 +40,7 @@ import {
 	type ResolvedContinuityConfig,
 } from "./config.js";
 import {
+	ARCHIVE_RETENTION_LIMIT,
 	PRODUCT_NAME,
 	SINGLE_FLIGHT_WINDOW_MS,
 	SYNTHESIS_MAX_TOKENS,
@@ -474,6 +476,20 @@ export async function runContinuityHandoff(
 				error: postQueueMessage,
 				resumePrompt,
 			};
+		}
+
+		try {
+			await pruneArchivedBriefs(paths.archiveDir, ARCHIVE_RETENTION_LIMIT);
+		} catch (cleanupError) {
+			const cleanupMessage =
+				cleanupError instanceof Error
+					? cleanupError.message
+					: String(cleanupError);
+			state.lastFailure = `archive retention cleanup failed: ${cleanupMessage}`;
+			ctx.ui.notify(
+				`${PRODUCT_NAME}: archive retention cleanup failed: ${cleanupMessage}`,
+				"warning",
+			);
 		}
 
 		state.lastArtifactPath = archivePath;

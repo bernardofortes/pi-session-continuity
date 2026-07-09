@@ -29,14 +29,16 @@ Do not install from sources you do not trust. Pi packages execute with local use
 ## Quick start
 
 ```text
+/continuity
 /continuity status
 /continuity checkpoint
 ```
 
-`/continuity checkpoint` performs a full Continuity Handoff: synthesize, validate, write the Continuity Brief, re-read it from disk, and queue the resume prompt from that saved content.
+`/continuity` opens the settings/config menu in interactive Pi TUI sessions. `/continuity checkpoint` performs a full Continuity Handoff: synthesize, validate, write the Continuity Brief, re-read it from disk, and queue the resume prompt from that saved content.
 
 ## Commands
 
+- `/continuity` — opens the same settings/config menu as `/continuity settings` in interactive Pi TUI sessions.
 - `/continuity status` — shows a human-readable status panel with enabled/disabled state, trigger and keep percentages, synthesis model and effort, artifact directory, active operation, last checkpoint, last artifact, failures, and stale same-session pending artifacts.
 - `/continuity checkpoint` — manually creates a disk-backed Continuity Brief and queues a resume prompt from it.
 - `/continuity settings` — opens an interactive settings menu in Pi TUI so you can view/change public config values such as `triggerAtPercent` without manually editing JSON. In non-interactive contexts, the same command falls back to textual output.
@@ -79,6 +81,8 @@ In interactive Pi sessions, `/continuity settings` can update this file for the 
 
 Artifacts from other sessions are inert. Same-session stale pending artifacts after reload are reported but not injected automatically.
 
+Successful handoffs are archived per session. After each successful archive, Pi Session Continuity keeps only the newest 10 archived Continuity Briefs for that session and deletes older archived briefs automatically.
+
 ## Privacy and security
 
 Continuity Briefs are local files that may contain prompts, tool output, file paths, command results, and sensitive project context. v0.1.0 does not guarantee secret redaction. Choose artifact directories and ignore rules accordingly.
@@ -103,7 +107,7 @@ External validation commands such as `pi install git:github.com/<owner>/pi-sessi
 ## Known limitations in v0.1.0
 
 - Local Pi sessions only.
-- No cleanup command.
+- No user-facing cleanup command.
 - No cross-machine sync or cloud storage.
 - GitHub clean-install smoke is required before public announcement.
 - npm publishing is deferred.

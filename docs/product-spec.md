@@ -138,7 +138,7 @@ Internal v0.1.0 safety constants are allowed but are not user-facing config unle
 minReserveTokens = 32000
 maxKeepRecentTokens = 80000
 singleFlightWindowMs = 600000
-archiveRetention = 20
+archiveRetention = 10
 ```
 
 ## 7. Artifact path layout
@@ -154,7 +154,7 @@ Artifacts are session-scoped:
 
 A status message that says `saved to <path>` must show the resolved artifact file path for the current event, not only the directory.
 
-v0.1.0 archives successful handoffs automatically after the resume prompt is queued from disk. User-facing cleanup is deferred.
+v0.1.0 archives successful handoffs automatically after the resume prompt is queued from disk. After each successful archive, automatic retention cleanup keeps only the newest 10 archived Continuity Briefs for that session and deletes older archived briefs from that session's `archive/` directory. User-facing cleanup commands are deferred.
 
 Path reporting rules:
 
@@ -406,10 +406,15 @@ Pi Session Continuity disabled: invalid configuration in <path>.
 v0.1.0 commands:
 
 ```text
+/continuity
 /continuity status
 /continuity checkpoint
 /continuity settings
 ```
+
+In interactive TUI contexts, `/continuity` with no subcommand is a shortcut for
+`/continuity settings`, so the default action opens the configuration menu.
+`/continuity status` remains the explicit textual status command.
 
 Deferred:
 

@@ -1,4 +1,11 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import {
+	mkdir,
+	readdir,
+	readFile,
+	rename,
+	unlink,
+	writeFile,
+} from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import {
@@ -10,6 +17,7 @@ import {
 	PRODUCT_NAME,
 	REQUIRED_FRONTMATTER_FIELDS,
 	RESUME_PROMPT_INTRO,
+	ARCHIVE_RETENTION_LIMIT,
 } from "./constants.js";
 
 export type ContinuityStatus = (typeof ALLOWED_STATUSES)[number];
@@ -464,6 +472,38 @@ export async function archiveBrief(
 	await mkdir(archiveDir, { recursive: true });
 	await rename(pendingPath, archivePath);
 	return archivePath;
+}
+
+export async function pruneArchivedBriefs(
+	archiveDir: string,
+	limit = ARCHIVE_RETENTION_LIMIT,
+): Promise<string[]> {
+	if (!Number.isInteger(limit) || limit < 1)
+		throw new Error("archive retention limit must be a positive integer");
+
+	let entries;
+	try {
+		entries = await readdir(archiveDir, { withFileTypes: true });
+	} catch (error) {
+		if (
+			error instanceof Error &&
+			"code" in error &&
+			(error as NodeJS.ErrnoException).code === "ENOENT"
+		) {
+			return [];
+		}
+		throw error;
+	}
+
+	const archiveFiles = entries
+		.filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+		.map((entry) => entry.name)
+		.sort((a, b) => b.localeCompare(a));
+	const removed = archiveFiles
+		.slice(limit)
+		.map((name) => join(archiveDir, name));
+	for (const path of removed) await unlink(path);
+	return removed;
 }
 
 export async function writeFailedArtifact(

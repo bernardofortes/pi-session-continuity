@@ -11,7 +11,10 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { MANDATORY_HEADINGS } from "../src/constants.js";
+import {
+	ARCHIVE_RETENTION_LIMIT,
+	MANDATORY_HEADINGS,
+} from "../src/constants.js";
 import { buildResumePrompt } from "../src/artifact.js";
 import { loadConfigFromDisk } from "../src/config.js";
 import { createHandoffState, runContinuityHandoff } from "../src/handoff.js";
@@ -164,6 +167,48 @@ describe("continuity handoff", () => {
 		expect(queuedBrief).toContain('status: "pending"');
 		expect(archived).toContain('status: "archived"');
 		expect(queuedBrief).toContain("# Continuity Brief");
+	});
+
+	it("keeps only the newest archived briefs for the same session", async () => {
+		const config = await loadConfigFromDisk(dir, ".pi", true);
+		const archiveDir = join(
+			config.artifactDirectoryPath,
+			"session-a",
+			"archive",
+		);
+		await mkdir(archiveDir, { recursive: true });
+		for (let index = 0; index < 12; index += 1) {
+			await writeFile(
+				join(
+					archiveDir,
+					`2000-01-01T00-00-${String(index).padStart(2, "0")}-000Z-old-${index}.md`,
+				),
+				"old archive",
+				"utf8",
+			);
+		}
+
+		const result = await runContinuityHandoff(
+			{ sendUserMessage: vi.fn() },
+			fakeCtx(),
+			config,
+			createHandoffState(),
+			{
+				reason: "manual",
+				synthesize: async () => body(),
+			},
+		);
+
+		expect(result.ok).toBe(true);
+		expect(result.archivePath).toBeTruthy();
+		const archives = readdirSync(archiveDir).filter((name) =>
+			name.endsWith(".md"),
+		);
+		expect(archives).toHaveLength(ARCHIVE_RETENTION_LIMIT);
+		expect(archives).toContain(result.archivePath!.split("/").at(-1));
+		expect(archives).not.toContain("2000-01-01T00-00-00-000Z-old-0.md");
+		expect(archives).not.toContain("2000-01-01T00-00-01-000Z-old-1.md");
+		expect(archives).not.toContain("2000-01-01T00-00-02-000Z-old-2.md");
 	});
 
 	it("queues no prompt when synthesis fails and writes failed postmortem when possible", async () => {
