@@ -99,7 +99,7 @@ Deferred enhancements may include:
 - user-facing cleanup command;
 - richer native compaction integration;
 - additional smoke harness automation;
-- npm release path.
+- richer npm/gallery release automation beyond the manual v0.1.0 publish path.
 
 ## 6. Minimal configuration
 
@@ -652,7 +652,7 @@ A public GitHub announcement is not ready until the repository contains user-fac
 
 ## 20. Clean install and public release validation
 
-Before a GitHub tag is announced, validation must include a clean install path, not only local tests.
+Before a GitHub tag or npm package is announced, validation must include a clean install path, not only local tests.
 
 Minimum release validation commands:
 
@@ -660,8 +660,8 @@ Minimum release validation commands:
 npm test
 npm run typecheck
 npm pack --dry-run
-pi -e git:github.com/<owner>/pi-session-continuity@v0.1.0
-pi install git:github.com/<owner>/pi-session-continuity@v0.1.0
+pi -e git:github.com/bernardofortes/pi-session-continuity@v0.1.0
+pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0
 ```
 
 Minimum clean-install smoke assertions:
@@ -672,7 +672,7 @@ Minimum clean-install smoke assertions:
 4. The resume prompt is queued from the exact saved disk artifact.
 5. Invalid config disables automatic behavior and reports the config file path.
 6. Untrusted project behavior is safe and explicit.
-7. `pi remove git:github.com/<owner>/pi-session-continuity` removes the package from settings without requiring manual cleanup of code.
+7. `pi remove git:github.com/bernardofortes/pi-session-continuity` removes the package from settings without requiring manual cleanup of code.
 
 The validation record should name the Pi version, Node version, OS, install command, smoke script/manual transcript, and resulting artifact path.
 
@@ -684,18 +684,19 @@ Public documentation and release notes must state:
 - Continuity Briefs are local files that may include user prompts, tool outputs, file paths, command results, and sensitive project context.
 - v0.1.0 does not guarantee secret redaction. Users should choose artifact directories and repository ignore rules accordingly.
 - The extension must not push, publish, create GitHub repos, upload artifacts, or mutate external systems.
-- v0.1.0 support target is local Pi sessions only. Cross-machine sync, cloud storage, shared team state, and npm distribution are deferred.
+- v0.1.0 support target is local Pi sessions only. Cross-machine sync, cloud storage, and shared team state are deferred.
 
 ## 22. Release policy
 
-The first public release should be a GitHub tag, not npm.
+The first public release should be anchored by a GitHub tag and may then be published to npm after the tagged GitHub package passes real Pi smoke testing.
 
-Install shape confirmed by Pi package docs:
+Install shapes confirmed by Pi package docs:
 
 ```bash
-pi install git:github.com/<owner>/pi-session-continuity@v0.1.0
+pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0
+pi install npm:pi-session-continuity
 ```
 
-Publishing to npm is deferred until the GitHub package has passed real Pi smoke testing.
+Publishing to npm is allowed for v0.1.0 only after the GitHub tag exists and clean GitHub install smoke has passed.
 
 External actions such as GitHub repository creation, git push, release tag creation, npm publishing, or public announcement require separate explicit human approval.

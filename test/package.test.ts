@@ -14,7 +14,8 @@ const requiredSmokeAssertions = [
 ];
 
 const requiredReadmePhrases = [
-	"pi install git:github.com/<owner>/pi-session-continuity@v0.1.0",
+	"pi install npm:pi-session-continuity",
+	"pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0",
 	"/continuity status",
 	"/continuity checkpoint",
 	"/continuity settings",
@@ -31,7 +32,8 @@ const requiredReadmePhrases = [
 	"Stale pending artifact",
 	"Untrusted project",
 	"pi update --extension",
-	"pi remove git:github.com/<owner>/pi-session-continuity",
+	"pi remove npm:pi-session-continuity",
+	"pi remove git:github.com/bernardofortes/pi-session-continuity",
 	"Compatibility",
 	"npm run smoke:manual",
 	"separate explicit human approval",
@@ -73,7 +75,7 @@ describe("package smoke contract", () => {
 		}
 	});
 
-	it("keeps changelog v0.1.0 notes and external release deferral explicit", async () => {
+	it("keeps changelog v0.1.0 notes and external release approval explicit", async () => {
 		const changelog = await readFile("CHANGELOG.md", "utf8");
 		expect(changelog).toContain("## 0.1.0");
 		expect(changelog).toContain("manual smoke checklist");

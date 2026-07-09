@@ -40,10 +40,16 @@ The result is a conservative infrastructure layer for extended Pi sessions: less
 
 ## Installation
 
-First public release is intended for a pinned GitHub tag:
+Recommended install from npm:
 
 ```bash
-pi install git:github.com/<owner>/pi-session-continuity@v0.1.0
+pi install npm:pi-session-continuity
+```
+
+Pinned GitHub install:
+
+```bash
+pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0
 ```
 
 For local development only:
@@ -128,9 +134,9 @@ npm run smoke:manual
 npm pack --dry-run
 ```
 
-`npm run smoke:manual` prints a checklist template for the required clean Pi smoke assertions. The checklist must be executed from a clean Pi install pinned to a GitHub ref before any public tag or announcement. Record the Pi version, Node version, OS, install command, smoke transcript, and resulting artifact path.
+`npm run smoke:manual` prints a checklist template for the required clean Pi smoke assertions. The checklist must be executed from a clean Pi install pinned to a GitHub ref before public announcement. Record the Pi version, Node version, OS, install command, smoke transcript, and resulting artifact path.
 
-External validation commands such as `pi install git:github.com/<owner>/pi-session-continuity@v0.1.0`, git tags, releases, npm publishing, or uploads require separate explicit human approval.
+External validation commands such as `pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.0`, git tags, releases, npm publishing, or uploads require separate explicit human approval.
 
 ## Known limitations in v0.1.0
 
@@ -138,7 +144,7 @@ External validation commands such as `pi install git:github.com/<owner>/pi-sessi
 - No user-facing cleanup command.
 - No cross-machine sync or cloud storage.
 - GitHub clean-install smoke is required before public announcement.
-- npm publishing is deferred.
+- npm is the recommended public install path after the tagged release passes smoke validation.
 
 ## Troubleshooting
 
@@ -151,8 +157,12 @@ External validation commands such as `pi install git:github.com/<owner>/pi-sessi
 ## Update / uninstall
 
 ```bash
-pi update --extension git:github.com/<owner>/pi-session-continuity@v0.1.0
-pi remove git:github.com/<owner>/pi-session-continuity
+pi update --extension npm:pi-session-continuity
+pi remove npm:pi-session-continuity
+
+# For pinned GitHub installs:
+pi update --extension git:github.com/bernardofortes/pi-session-continuity@v0.1.0
+pi remove git:github.com/bernardofortes/pi-session-continuity
 ```
 
 Removing the package stops loading the extension. Existing local artifacts remain on disk unless you remove them manually.

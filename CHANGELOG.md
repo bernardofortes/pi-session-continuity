@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — Unreleased
+## 0.1.0 — 2026-07-09
 
 - Add Pi package manifest for `pi-session-continuity`.
 - Add `/continuity status`, `/continuity checkpoint`, and `/continuity settings` extension entrypoint.
@@ -10,4 +10,4 @@
 - Add local unit tests and a packaged manual smoke checklist covering the required clean Pi smoke assertions.
 - Add package/docs contract tests for the smoke script and public documentation collateral.
 
-Public tag, GitHub install smoke, and external release announcement remain gated by explicit human approval.
+Public tag, GitHub install smoke, npm publish, and external release announcement remain gated by explicit human approval.
