@@ -24,6 +24,21 @@ function body(): string {
 	);
 }
 
+async function waitFor(check: () => void): Promise<void> {
+	const started = Date.now();
+	let lastError: unknown;
+	while (Date.now() - started < 1000) {
+		try {
+			check();
+			return;
+		} catch (error) {
+			lastError = error;
+			await new Promise((resolve) => setTimeout(resolve, 10));
+		}
+	}
+	throw lastError;
+}
+
 function fakeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
 	const notifications: string[] = [];
 	return {
@@ -299,10 +314,12 @@ describe("continuity handoff", () => {
 		expect(sent).toEqual([]);
 	});
 
-	it("preserves archive path when compaction setup throws after archive", async () => {
+	it("does not queue resume when compaction setup throws after saving artifact", async () => {
 		const config = await loadConfigFromDisk(dir, ".pi", true);
+		const sent: string[] = [];
+		const state = createHandoffState();
 		const result = await runContinuityHandoff(
-			{ sendUserMessage: vi.fn() },
+			{ sendUserMessage: (text: string) => sent.push(text) },
 			fakeCtx({
 				isIdle: () => true,
 				compact: () => {
@@ -310,16 +327,22 @@ describe("continuity handoff", () => {
 				},
 			}),
 			config,
-			createHandoffState(),
+			state,
 			{
 				reason: "threshold",
 				requestCompaction: true,
 				synthesize: async () => body(),
 			},
 		);
-		expect(result.ok).toBe(true);
-		expect(result.archivePath).toBeTruthy();
-		expect(result.error).toBeUndefined();
+		expect(result.ok).toBe(false);
+		expect(result.pendingPath).toBeTruthy();
+		expect(result.archivePath).toBeUndefined();
+		expect(sent).toEqual([]);
+		expect(state.lastAutomaticFailureAt).toBeGreaterThan(0);
+		await expect(stat(result.pendingPath!)).resolves.toBeTruthy();
+		expect(
+			readdirSync(join(config.artifactDirectoryPath, "session-a", "lock")),
+		).toEqual([]);
 	});
 
 	it("suppresses duplicate handoffs using a fresh on-disk lock sentinel", async () => {
@@ -376,7 +399,7 @@ describe("continuity handoff", () => {
 		await expect(stat(activeLockPath)).resolves.toBeTruthy();
 	});
 
-	it("sends immediately without followUp delivery options when idle", async () => {
+	it("uses followUp delivery for disk-backed resume even when idle", async () => {
 		const config = await loadConfigFromDisk(dir, ".pi", true);
 		const sent: Array<{ text: string; options?: unknown }> = [];
 		const result = await runContinuityHandoff(
@@ -394,14 +417,23 @@ describe("continuity handoff", () => {
 		);
 		expect(result.ok).toBe(true);
 		expect(sent).toHaveLength(1);
-		expect(sent[0].options).toBeUndefined();
+		expect(sent[0].options).toEqual({ deliverAs: "followUp" });
 	});
 
-	it("requests compaction only after a successful disk-backed resume path", async () => {
-		const compact = vi.fn();
+	it("defers disk-backed resume until requested compaction completes", async () => {
+		let onComplete: (() => void) | undefined;
+		const compact = vi.fn(
+			(options: { customInstructions?: string; onComplete?: () => void }) => {
+				onComplete = options.onComplete;
+			},
+		);
+		const sent: Array<{ text: string; options?: unknown }> = [];
 		const config = await loadConfigFromDisk(dir, ".pi", true);
 		const result = await runContinuityHandoff(
-			{ sendUserMessage: vi.fn() },
+			{
+				sendUserMessage: (text: string, options?: unknown) =>
+					sent.push({ text, options }),
+			},
 			fakeCtx({ isIdle: () => true, compact }),
 			config,
 			createHandoffState(),
@@ -411,13 +443,32 @@ describe("continuity handoff", () => {
 				synthesize: async () => body(),
 			},
 		);
+		expect(result.ok).toBe(true);
+		expect(result.pendingPath).toBeTruthy();
+		expect(result.archivePath).toBeUndefined();
+		expect(sent).toEqual([]);
 		expect(compact).toHaveBeenCalledTimes(1);
 		expect(compact.mock.calls[0][0].customInstructions).toContain(
 			"newest 150 tokens",
 		);
 		expect(compact.mock.calls[0][0].customInstructions).toContain(
-			result.archivePath,
+			result.pendingPath,
 		);
+		await expect(stat(result.pendingPath!)).resolves.toBeTruthy();
+		expect(
+			readdirSync(join(config.artifactDirectoryPath, "session-a", "lock")),
+		).toEqual(expect.arrayContaining([".active"]));
+
+		onComplete?.();
+		await waitFor(() => expect(sent).toHaveLength(1));
+		expect(sent[0].options).toEqual({ deliverAs: "followUp" });
+		await expect(stat(result.pendingPath!)).rejects.toThrow();
+		expect(
+			readdirSync(join(config.artifactDirectoryPath, "session-a", "archive")),
+		).toHaveLength(1);
+		expect(
+			readdirSync(join(config.artifactDirectoryPath, "session-a", "lock")),
+		).toEqual([]);
 	});
 
 	it("does not request compaction when validation fails before queue", async () => {
@@ -438,11 +489,18 @@ describe("continuity handoff", () => {
 		expect(compact).not.toHaveBeenCalled();
 	});
 
-	it("does not request compaction when post-queue archive update fails", async () => {
-		const compact = vi.fn();
+	it("reports archive update failure after post-compaction resume queue", async () => {
+		let onComplete: (() => void) | undefined;
+		const compact = vi.fn(
+			(options: { customInstructions?: string; onComplete?: () => void }) => {
+				onComplete = options.onComplete;
+			},
+		);
 		const config = await loadConfigFromDisk(dir, ".pi", true);
+		const state = createHandoffState();
+		const sent: string[] = [];
 		const pi = {
-			sendUserMessage: () => {
+			sendUserMessage: (text: string) => {
 				const archivePath = join(
 					config.artifactDirectoryPath,
 					"session-a",
@@ -450,13 +508,14 @@ describe("continuity handoff", () => {
 				);
 				rmSync(archivePath, { recursive: true, force: true });
 				writeFileSync(archivePath, "archive blocker", "utf8");
+				sent.push(text);
 			},
 		};
 		const result = await runContinuityHandoff(
 			pi,
 			fakeCtx({ compact }),
 			config,
-			createHandoffState(),
+			state,
 			{
 				reason: "threshold",
 				requestCompaction: true,
@@ -465,6 +524,14 @@ describe("continuity handoff", () => {
 		);
 		expect(result.ok).toBe(true);
 		expect(result.archivePath).toBeUndefined();
-		expect(compact).not.toHaveBeenCalled();
+		expect(compact).toHaveBeenCalledTimes(1);
+		expect(sent).toEqual([]);
+
+		onComplete?.();
+		await waitFor(() => expect(sent).toHaveLength(1));
+		expect(state.lastFailure).toContain("post-queue artifact update failed");
+		expect(
+			readdirSync(join(config.artifactDirectoryPath, "session-a", "lock")),
+		).toEqual([]);
 	});
 });

@@ -416,54 +416,28 @@ export async function runContinuityHandoff(
 	const frontmatter = buildFrontmatterForContext(ctx, config, eventId);
 	let pendingContent = "";
 	let lockAcquired = false;
+	let cleanupDeferred = false;
 
-	try {
-		await ensureArtifactDirectories(paths);
-		if (!(await acquireSessionLock(paths, eventId, options.reason))) {
-			ctx.ui.notify(
-				`${PRODUCT_NAME}: checkpoint already in progress; skipping duplicate trigger.`,
-				"warning",
-			);
-			return { ok: false, eventId, error: "duplicate trigger skipped" };
+	const settleHandoff = async (): Promise<void> => {
+		if (lockAcquired) {
+			lockAcquired = false;
+			await removeLock(paths.lockPath, paths.lockDir);
 		}
-		lockAcquired = true;
-		ctx.ui.notify(
-			`${PRODUCT_NAME}: synthesizing Continuity Brief with ${frontmatter.synthesisModel}.`,
-			"info",
-		);
+		if (state.activeBySession.get(sessionId) === eventId)
+			state.activeBySession.delete(sessionId);
+		if (state.activeOperation === eventId) state.activeOperation = undefined;
+	};
 
-		const branchMessages = extractBranchMessages(ctx);
-		const conversationText = serializeConversation(
-			convertToLlm(branchMessages),
-		);
-		const systemPrompt = ctx.getSystemPrompt();
-		const synthesize =
-			options.synthesize ??
-			((input, synthCtx) => synthesizeWithModel(input, synthCtx, config));
-		const synthesized = await synthesize(
-			{ frontmatter, conversationText, systemPrompt },
-			ctx,
-		);
-		const body = normalizeSynthesizedBody(synthesized);
-		pendingContent = serializeBrief(frontmatter, body);
-		const validation = validateBrief(pendingContent, sessionId);
-		if (!validation.ok)
-			throw new Error(
-				`Continuity Brief validation failed: ${validation.errors.join("; ")}`,
-			);
+	const recordCompactionFailure = (message: string): void => {
+		state.lastFailure = `compaction hygiene failed before resume: ${message}`;
+		if (options.reason === "threshold")
+			state.lastAutomaticFailureAt = Date.now();
+	};
 
-		await writeTextFile(paths.pendingPath, pendingContent);
-		state.lastPendingPath = paths.pendingPath;
-		state.lastArtifactPath = paths.pendingPath;
-		ctx.ui.notify(
-			`${PRODUCT_NAME}: Continuity Brief saved to ${paths.pendingPath}.`,
-			"info",
-		);
-
+	const queueResumeFromSavedBrief = async (): Promise<HandoffResult> => {
 		const savedBrief = await readTextFile(paths.pendingPath);
 		const resumePrompt = buildResumePrompt(savedBrief, sessionId);
-		if (ctx.isIdle()) pi.sendUserMessage(resumePrompt);
-		else pi.sendUserMessage(resumePrompt, { deliverAs: "followUp" });
+		pi.sendUserMessage(resumePrompt, { deliverAs: "followUp" });
 		ctx.ui.notify(
 			`${PRODUCT_NAME}: resume prompt queued from saved Continuity Brief.`,
 			"info",
@@ -509,33 +483,6 @@ export async function runContinuityHandoff(
 			"info",
 		);
 
-		if (options.requestCompaction) {
-			try {
-				const keepRecentTokens = deriveKeepRecentTokens(
-					frontmatter.contextWindow,
-					config.keepRecentPercent,
-				);
-				ctx.compact({
-					customInstructions: `Pi Session Continuity handoff is safe. Keep approximately the newest ${keepRecentTokens} tokens as raw context; continuity source is the saved artifact at ${archivePath}.`,
-					onError: (error) =>
-						ctx.ui.notify(
-							`${PRODUCT_NAME}: compaction hygiene failed after handoff: ${error.message}`,
-							"warning",
-						),
-				});
-			} catch (compactionError) {
-				const compactionMessage =
-					compactionError instanceof Error
-						? compactionError.message
-						: String(compactionError);
-				state.lastFailure = `compaction hygiene failed after handoff: ${compactionMessage}`;
-				ctx.ui.notify(
-					`${PRODUCT_NAME}: compaction hygiene failed after handoff: ${compactionMessage}`,
-					"warning",
-				);
-			}
-		}
-
 		return {
 			ok: true,
 			eventId,
@@ -543,6 +490,127 @@ export async function runContinuityHandoff(
 			archivePath,
 			resumePrompt,
 		};
+	};
+
+	try {
+		await ensureArtifactDirectories(paths);
+		if (!(await acquireSessionLock(paths, eventId, options.reason))) {
+			ctx.ui.notify(
+				`${PRODUCT_NAME}: checkpoint already in progress; skipping duplicate trigger.`,
+				"warning",
+			);
+			return { ok: false, eventId, error: "duplicate trigger skipped" };
+		}
+		lockAcquired = true;
+		ctx.ui.notify(
+			`${PRODUCT_NAME}: synthesizing Continuity Brief with ${frontmatter.synthesisModel}.`,
+			"info",
+		);
+
+		const branchMessages = extractBranchMessages(ctx);
+		const conversationText = serializeConversation(
+			convertToLlm(branchMessages),
+		);
+		const systemPrompt = ctx.getSystemPrompt();
+		const synthesize =
+			options.synthesize ??
+			((input, synthCtx) => synthesizeWithModel(input, synthCtx, config));
+		const synthesized = await synthesize(
+			{ frontmatter, conversationText, systemPrompt },
+			ctx,
+		);
+		const body = normalizeSynthesizedBody(synthesized);
+		pendingContent = serializeBrief(frontmatter, body);
+		const validation = validateBrief(pendingContent, sessionId);
+		if (!validation.ok)
+			throw new Error(
+				`Continuity Brief validation failed: ${validation.errors.join("; ")}`,
+			);
+
+		await writeTextFile(paths.pendingPath, pendingContent);
+		state.lastPendingPath = paths.pendingPath;
+		state.lastArtifactPath = paths.pendingPath;
+		ctx.ui.notify(
+			`${PRODUCT_NAME}: Continuity Brief saved to ${paths.pendingPath}.`,
+			"info",
+		);
+
+		if (options.requestCompaction) {
+			const keepRecentTokens = deriveKeepRecentTokens(
+				frontmatter.contextWindow,
+				config.keepRecentPercent,
+			);
+			let compactionCallbackSettled = false;
+			const claimCompactionCallback = (): boolean => {
+				if (compactionCallbackSettled) return false;
+				compactionCallbackSettled = true;
+				return true;
+			};
+			cleanupDeferred = true;
+			try {
+				ctx.compact({
+					customInstructions: `Pi Session Continuity handoff is safe. Keep approximately the newest ${keepRecentTokens} tokens as raw context; continuity source is the saved artifact at ${paths.pendingPath}. Queue the resume prompt from that disk artifact only after compaction completes.`,
+					onComplete: () => {
+						if (!claimCompactionCallback()) return;
+						void (async () => {
+							try {
+								await queueResumeFromSavedBrief();
+							} catch (resumeError) {
+								const resumeMessage =
+									resumeError instanceof Error
+										? resumeError.message
+										: String(resumeError);
+								state.lastFailure = `post-compaction resume failed: ${resumeMessage}`;
+								if (options.reason === "threshold")
+									state.lastAutomaticFailureAt = Date.now();
+								ctx.ui.notify(
+									`${PRODUCT_NAME} failed: ${resumeMessage}. No resume prompt was queued.`,
+									"error",
+								);
+							} finally {
+								await settleHandoff();
+							}
+						})();
+					},
+					onError: (error) => {
+						if (!claimCompactionCallback()) return;
+						void (async () => {
+							recordCompactionFailure(error.message);
+							ctx.ui.notify(
+								`${PRODUCT_NAME}: compaction hygiene failed before resume: ${error.message}. No resume prompt was queued.`,
+								"warning",
+							);
+							await settleHandoff();
+						})();
+					},
+				});
+			} catch (compactionError) {
+				cleanupDeferred = false;
+				const compactionMessage =
+					compactionError instanceof Error
+						? compactionError.message
+						: String(compactionError);
+				recordCompactionFailure(compactionMessage);
+				ctx.ui.notify(
+					`${PRODUCT_NAME}: compaction hygiene failed before resume: ${compactionMessage}. No resume prompt was queued.`,
+					"warning",
+				);
+				return {
+					ok: false,
+					eventId,
+					pendingPath: paths.pendingPath,
+					error: compactionMessage,
+				};
+			}
+
+			return {
+				ok: true,
+				eventId,
+				pendingPath: paths.pendingPath,
+			};
+		}
+
+		return await queueResumeFromSavedBrief();
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		state.lastFailure = message;
@@ -576,9 +644,7 @@ export async function runContinuityHandoff(
 			error: message,
 		};
 	} finally {
-		if (lockAcquired) await removeLock(paths.lockPath, paths.lockDir);
-		state.activeBySession.delete(sessionId);
-		state.activeOperation = undefined;
+		if (!cleanupDeferred) await settleHandoff();
 	}
 }
 

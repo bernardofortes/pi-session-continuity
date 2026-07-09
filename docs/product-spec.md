@@ -612,8 +612,14 @@ Implementation must bind the product behavior to explicit Pi APIs:
 - Use a single-flight in-memory latch plus the on-disk lock sentinel before synthesis starts.
 - Use `ctx.sessionManager.getSessionId()`, `ctx.sessionManager.getSessionFile()`, `ctx.sessionManager.getLeafId()`, and `ctx.sessionManager.getBranch()` when constructing artifact identity and synthesis input.
 - Use the resolved `synthesisModel` through Pi's model registry and auth APIs. If the selected synthesis model cannot be resolved or authenticated, synthesis fails clearly and queues no prompt.
-- Queue the resume prompt with `pi.sendUserMessage()` only after the artifact has been written and re-read from disk. If an agent is busy, use the documented delivery mode required by Pi, normally `deliverAs: "followUp"` for a non-interrupting continuation.
-- If native compaction is requested as token hygiene, call `ctx.compact()` only after the Continuity Brief is saved and the resume prompt has been queued from disk. Compaction failure must not invalidate the saved artifact.
+- Queue the resume prompt with `pi.sendUserMessage()` only after the artifact
+  has been written and re-read from disk. Use the documented non-interrupting
+  delivery mode, normally `deliverAs: "followUp"`, for the resume continuation.
+- If native compaction is requested as token hygiene for the same handoff, write
+  and re-read the Continuity Brief first, call `ctx.compact()`, and queue the
+  resume prompt from the saved disk artifact only after compaction completes.
+  Compaction failure must not invalidate the saved artifact, but it must not
+  race a resume prompt ahead of the compaction.
 - Use `session_shutdown` only for cleanup of session-scoped resources. Do not start long-lived timers, watchers, sockets, or background processes from the extension factory.
 - In non-UI modes, commands must return textual status through Pi-supported command output/notifications without requiring dialogs.
 
