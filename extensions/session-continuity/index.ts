@@ -27,16 +27,11 @@ import {
 	notifyStatus,
 	statusHeadlineForConfig,
 } from "../../src/status.js";
-import {
-	decideAutomaticTrigger,
-	hasCompleteAssistantToolResultBatch,
-	type ContextUsageSnapshot,
-} from "../../src/trigger.js";
-import { estimateContextTokensFromMessages } from "../../src/pi-internals.js";
+import { decideAutomaticTrigger } from "../../src/trigger.js";
 
-type SessionContinuityRegistry = {
+interface SessionContinuityRegistry {
 	activeRuntimeKeys: WeakSet<object>;
-};
+}
 
 const REGISTRY_KEY = Symbol.for("pi-session-continuity.extension-registry");
 
@@ -56,7 +51,12 @@ function runtimeKeyFor(pi: ExtensionAPI): object {
 export default function sessionContinuityExtension(pi: ExtensionAPI) {
 	const registry = singletonRegistry();
 	const runtimeKey = runtimeKeyFor(pi);
-	if (registry.activeRuntimeKeys.has(runtimeKey)) return;
+	if (registry.activeRuntimeKeys.has(runtimeKey)) {
+		console.warn(
+			"pi-session-continuity: duplicate package registration ignored; /continuity will be served by the already-registered copy.",
+		);
+		return;
+	}
 	registry.activeRuntimeKeys.add(runtimeKey);
 
 	const state = createHandoffState();
@@ -120,34 +120,19 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		);
 	}
 
-	function getContextUsage(
-		ctx: ExtensionContext,
-	): ContextUsageSnapshot | undefined {
-		try {
-			return typeof ctx.getContextUsage === "function"
-				? ctx.getContextUsage()
-				: undefined;
-		} catch {
-			return undefined;
-		}
-	}
-
 	function warnUnavailableUsageOnce(
 		ctx: ExtensionContext,
 		config: ResolvedContinuityConfig,
-		reason: "usage-unavailable" | "window-unavailable",
+		reason: string,
 	): void {
 		const key = `${ctx.sessionManager.getSessionId()}|${config.configPath}|${config.triggerAtPercent}|${config.keepRecentPercent}|${reason}`;
 		if (usageUnavailableWarningKey === key) return;
 		usageUnavailableWarningKey = key;
-		const detail =
+		const message =
 			reason === "usage-unavailable"
-				? "context usage is unavailable"
-				: "context usage or model window is unavailable";
-		ctx.ui.notify(
-			`${PRODUCT_NAME}: automatic trigger skipped because ${detail}; suppressing repeated notices for this session/config.`,
-			"warning",
-		);
+				? `${PRODUCT_NAME}: automatic trigger skipped because context usage is unavailable.`
+				: `${PRODUCT_NAME}: automatic trigger skipped because context usage or model window is unavailable.`;
+		ctx.ui.notify(message, "warning");
 	}
 
 	async function saveConfigDraft(
@@ -295,23 +280,9 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		notifyStatus(ctx, statusHeadlineForConfig(config));
 	});
 
-	pi.on("context", async (event, ctx) => {
-		if (!hasCompleteAssistantToolResultBatch(event.messages)) return;
-
+	pi.on("turn_end", async (_event, ctx) => {
 		const config = currentConfig ?? (await refreshConfig(ctx));
-
-		// Estimate real context tokens from the messages that will be sent to the
-		// provider, not the stale ctx.getContextUsage() value that only reflects
-		// the last assistant response. This mirrors pi-continue's mid-run guard
-		// and is the reason the trigger actually fires at 75% in production.
-		const contextWindow = ctx.model?.contextWindow ?? 0;
-		const estimate = await estimateContextTokensFromMessages(event.messages);
-		const usage: ContextUsageSnapshot | undefined =
-			estimate !== null
-				? { tokens: estimate.tokens, contextWindow }
-				: getContextUsage(ctx);
-
-		const decision = decideAutomaticTrigger(config, usage);
+		const decision = decideAutomaticTrigger(config, ctx.getContextUsage());
 		if (!decision.shouldRun) {
 			if (
 				decision.reason === "usage-unavailable" ||
@@ -327,7 +298,6 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		) {
 			return;
 		}
-
 		ctx.ui.notify(
 			`${PRODUCT_NAME}: context threshold reached; preparing Continuity Handoff.`,
 			"info",
@@ -338,83 +308,6 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		});
 	});
 
-	pi.on("session_shutdown", () => {
-		registry.activeRuntimeKeys.delete(runtimeKey);
-	});
-
-	async function showStatusPanel(
-		ctx: ExtensionContext,
-		config: ResolvedContinuityConfig,
-	): Promise<void> {
-		const stale = config.trusted
-			? await findStalePendingArtifacts(
-					config.artifactDirectoryPath,
-					ctx.sessionManager.getSessionId(),
-				)
-			: [];
-		const stalePath = stale[0]
-			? `${stale[0].path}${stale[0].lockPath ? ` (lock: ${stale[0].lockPath})` : ""}`
-			: undefined;
-		showCommandPanel(ctx, formatStatus(config, state, stalePath));
-	}
-
-	async function runManualCheckpoint(
-		ctx: ExtensionContext,
-		config: ResolvedContinuityConfig,
-	): Promise<void> {
-		if (!config.trusted) {
-			showCommandOutput(
-				ctx,
-				`${PRODUCT_NAME}: checkpoint disabled because project is not trusted. Config path: ${config.configPath}.`,
-			);
-			return;
-		}
-		if (!config.valid) {
-			showCommandOutput(
-				ctx,
-				`${PRODUCT_NAME} disabled: invalid configuration in ${config.configPath}.`,
-			);
-			return;
-		}
-		if (!config.enabled) {
-			showCommandOutput(ctx, `${PRODUCT_NAME}: disabled by configuration.`);
-			return;
-		}
-		await runContinuityHandoff(pi, ctx, config, state, {
-			reason: "manual",
-			requestCompaction: false,
-		});
-	}
-
-	async function openTopLevelMenu(
-		ctx: ExtensionContext,
-		config: ResolvedContinuityConfig,
-	): Promise<void> {
-		if (!ctx.hasUI || ctx.mode !== "tui") {
-			showCommandOutput(
-				ctx,
-				`${PRODUCT_NAME}: use /continuity status, /continuity checkpoint, or /continuity settings.`,
-			);
-			return;
-		}
-		const choice = await ctx.ui.select("Pi Session Continuity", [
-			"Status",
-			"Create checkpoint now",
-			"Settings",
-			"Done",
-		]);
-		if (!choice || choice === "Done") return;
-		if (choice === "Status") {
-			await showStatusPanel(ctx, config);
-			return;
-		}
-		if (choice === "Create checkpoint now") {
-			await runManualCheckpoint(ctx, config);
-			return;
-		}
-		if (choice === "Settings") await openSettingsMenu(ctx, config);
-	}
-
 	pi.registerCommand("continuity", {
 		description: "Pi Session Continuity: status, checkpoint, and settings",
 		getArgumentCompletions(prefix) {
@@ -424,16 +317,64 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		},
 		handler: async (args, ctx) => {
 			const tokens = args.trim().split(/\s+/).filter(Boolean);
-			const subcommand = tokens[0];
+			const subcommand = tokens[0] ?? "";
 			const config = await refreshConfig(ctx);
 
-			if (!subcommand) {
-				await openTopLevelMenu(ctx, config);
+			if (subcommand === "") {
+				if (ctx.hasUI && ctx.mode === "tui" && config.trusted) {
+					const choice = await ctx.ui.select("Pi Session Continuity", [
+						"Status",
+						"Create checkpoint now",
+						"Settings",
+						"Done",
+					]);
+					if (!choice || choice === "Done") return;
+					if (choice === "Status") {
+						const stale = await findStalePendingArtifacts(
+							config.artifactDirectoryPath,
+							ctx.sessionManager.getSessionId(),
+						);
+						const stalePath = stale[0]
+							? `${stale[0].path}${stale[0].lockPath ? ` (lock: ${stale[0].lockPath})` : ""}`
+							: undefined;
+						showCommandPanel(ctx, formatStatus(config, state, stalePath));
+						return;
+					}
+					if (choice === "Create checkpoint now") {
+						if (!config.valid || !config.enabled) {
+							showCommandOutput(
+								ctx,
+								`${PRODUCT_NAME}: disabled by configuration.`,
+							);
+							return;
+						}
+						await runContinuityHandoff(pi, ctx, config, state, {
+							reason: "manual",
+							requestCompaction: false,
+						});
+						return;
+					}
+					if (choice === "Settings") {
+						await openSettingsMenu(ctx, config);
+						return;
+					}
+					return;
+				}
+				showCommandPanel(ctx, formatStatus(config, state));
 				return;
 			}
 
 			if (subcommand === "status") {
-				await showStatusPanel(ctx, config);
+				const stale = config.trusted
+					? await findStalePendingArtifacts(
+							config.artifactDirectoryPath,
+							ctx.sessionManager.getSessionId(),
+						)
+					: [];
+				const stalePath = stale[0]
+					? `${stale[0].path}${stale[0].lockPath ? ` (lock: ${stale[0].lockPath})` : ""}`
+					: undefined;
+				showCommandPanel(ctx, formatStatus(config, state, stalePath));
 				return;
 			}
 
@@ -443,7 +384,28 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 			}
 
 			if (subcommand === "checkpoint") {
-				await runManualCheckpoint(ctx, config);
+				if (!config.trusted) {
+					showCommandOutput(
+						ctx,
+						`${PRODUCT_NAME}: checkpoint disabled because project is not trusted. Config path: ${config.configPath}.`,
+					);
+					return;
+				}
+				if (!config.valid) {
+					showCommandOutput(
+						ctx,
+						`${PRODUCT_NAME} disabled: invalid configuration in ${config.configPath}.`,
+					);
+					return;
+				}
+				if (!config.enabled) {
+					showCommandOutput(ctx, `${PRODUCT_NAME}: disabled by configuration.`);
+					return;
+				}
+				await runContinuityHandoff(pi, ctx, config, state, {
+					reason: "manual",
+					requestCompaction: false,
+				});
 				return;
 			}
 
@@ -452,5 +414,9 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 				`${PRODUCT_NAME}: unknown subcommand '${subcommand}'. Use /continuity status, /continuity checkpoint, or /continuity settings.`,
 			);
 		},
+	});
+
+	pi.on("session_shutdown", () => {
+		registry.activeRuntimeKeys.delete(runtimeKey);
 	});
 }

@@ -595,12 +595,23 @@ export async function runContinuityHandoff(
 			"info",
 		);
 
+		// Manual checkpoint: save only. Do not queue a resume prompt or request
+		// compaction. The brief stays as pending on disk for manual recovery.
+		if (options.reason === "manual") {
+			state.lastCheckpointAt = new Date().toISOString();
+			ctx.ui.notify(
+				`${PRODUCT_NAME}: checkpoint saved to ${paths.pendingPath}. No resume prompt was queued. To recover, read this file and paste its body into a new session.`,
+				"info",
+			);
+			await settleHandoff();
+			return {
+				ok: true,
+				eventId,
+				pendingPath: paths.pendingPath,
+			};
+		}
+
 		if (options.requestCompaction) {
-			// Abort the active agent run now that the brief is safely on disk.
-			// This prevents the next provider request from racing with
-			// compaction. Synthesis must run before this abort because it uses
-			// ctx.signal; aborting earlier would kill the synthesis call.
-			ctx.abort();
 			const keepRecentTokens = deriveKeepRecentTokens(
 				frontmatter.contextWindow,
 				config.keepRecentPercent,

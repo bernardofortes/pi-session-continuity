@@ -68,13 +68,13 @@ Do not install from sources you do not trust. Pi packages execute with local use
 /continuity checkpoint
 ```
 
-In local v0.1.2 work, `/continuity` opens a top-level TUI menu: Status, Create checkpoint now, Settings, Done. `/continuity settings` still opens the settings menu directly. `/continuity checkpoint` performs a full Continuity Handoff: synthesize, validate, write the Continuity Brief, re-read it from disk, request compaction when appropriate, and queue the resume prompt from the saved disk content.
+`/continuity` opens the settings/config menu in interactive Pi TUI sessions. `/continuity checkpoint` performs a full Continuity Handoff: synthesize, validate, write the Continuity Brief, re-read it from disk, and queue the resume prompt from that saved content.
 
 ## Commands
 
-- `/continuity` — opens the top-level menu in interactive Pi TUI sessions: Status, Create checkpoint now, Settings, Done.
+- `/continuity` — opens the same settings/config menu as `/continuity settings` in interactive Pi TUI sessions.
 - `/continuity status` — shows a human-readable status panel with enabled/disabled state, trigger and keep percentages, synthesis model and effort, artifact directory, active operation, last checkpoint, last artifact, failures, and stale same-session pending artifacts.
-- `/continuity checkpoint` — manually creates a disk-backed Continuity Brief and queues a resume prompt from it.
+- `/continuity checkpoint` — saves a Continuity Brief to disk as pending. Does not queue a resume prompt or request compaction. The brief stays on disk for manual recovery.
 - `/continuity settings` — opens an interactive settings menu in Pi TUI so you can view/change public config values such as `triggerAtPercent` without manually editing JSON. In non-interactive contexts, the same command falls back to textual output.
 
 ## Configuration
@@ -100,27 +100,13 @@ Defaults:
 }
 ```
 
-`triggerAtPercent` defaults to 75%; Pi Session Continuity makes synthesis fit at that threshold by bounding transcript material instead of lowering the default. `synthesisEffort` controls Continuity Brief synthesis reasoning/thinking level and accepts `inherit`, `minimal`, `low`, `medium`, `high`, or `xhigh`. `artifactDirectory` resolves under `<workspace>/<CONFIG_DIR_NAME>/` unless absolute. Invalid config disables automatic behavior and reports the config path.
+`synthesisEffort` controls Continuity Brief synthesis reasoning/thinking level and accepts `inherit`, `minimal`, `low`, `medium`, `high`, or `xhigh`. `artifactDirectory` resolves under `<workspace>/<CONFIG_DIR_NAME>/` unless absolute. Invalid config disables automatic behavior and reports the config path.
 
 In interactive Pi sessions, `/continuity settings` can update this file for the public config fields. In non-interactive contexts, edit the JSON directly or run `/continuity settings` for textual inspection.
 
-### Automatic handoff boundary and native Pi auto-compaction
+### Native Pi auto-compaction
 
-Automatic handoffs evaluate in Pi's `context` hook before the next provider request, not in `turn_end`. The extension only triggers after the message context ends with a complete assistant/tool-result batch: the assistant tool-call ids exactly match the following tool-result ids.
-
-The synthesis input is budgeted separately from raw branch size. Large transcripts/tool outputs are handled recency-first: older transcript material is omitted with an explicit diagnostic note before the synthesis provider call, so the default 75% trigger still has room to write a Continuity Brief.
-
-The trigger estimates context tokens from the real messages that will be sent to the provider, not the stale `ctx.getContextUsage()` value. When the threshold is reached, the extension aborts the active agent run before starting the handoff, preventing the next provider request from racing with synthesis and compaction.
-
-End-to-end automatic flow:
-
-```text
-save and validate Continuity Brief on disk
-→ request compaction preserving configured recent useful raw tokens
-→ queue/reinject resume prompt from the saved disk artifact
-```
-
-Pi native auto-compaction is enabled by default. Reliable automatic Pi Session Continuity handoffs require native Pi auto-compaction disabled, because native auto-compaction can run before PSC writes its disk-backed handoff. PSC does not implement `session_before_compact` arbitration/coexistence in v0.1.2.
+Pi native auto-compaction is enabled by default. When Pi Session Continuity automatic behavior is enabled, the package warns on session load if native Pi auto-compaction is still enabled because both systems can compete near the same context threshold.
 
 Recommended project-local Pi setting:
 
@@ -132,7 +118,7 @@ Recommended project-local Pi setting:
 }
 ```
 
-Save that in `<workspace>/<CONFIG_DIR_NAME>/settings.json` (normally `.pi/settings.json`). Pi Session Continuity does not change this setting automatically during install or load. Native Pi auto-compaction remains unsupported/not recommended for reliable automatic PSC handoffs; manual `/compact` can still be used deliberately outside the automatic path.
+Save that in `<workspace>/<CONFIG_DIR_NAME>/settings.json` (normally `.pi/settings.json`). Pi Session Continuity does not change this setting automatically during install or load.
 
 ## Artifact layout
 
@@ -168,11 +154,9 @@ npm pack --dry-run
 
 External validation commands such as `pi install git:github.com/bernardofortes/pi-session-continuity@v0.1.1`, git tags, releases, npm publishing, or uploads require separate explicit human approval.
 
-## Known limitations in v0.1.x / local v0.1.2
+## Known limitations in v0.1.0
 
 - Local Pi sessions only.
-- Local v0.1.2 is unreleased unless a human separately approves tag/publish work.
-- Native Pi auto-compaction should be disabled for reliable automatic handoffs; PSC does not arbitrate native auto-compaction.
 - No user-facing cleanup command.
 - No cross-machine sync or cloud storage.
 - GitHub clean-install smoke is required before public announcement.
@@ -183,8 +167,8 @@ External validation commands such as `pi install git:github.com/bernardofortes/p
 - Invalid config: fix the JSON at the reported path; automatic behavior stays disabled until corrected.
 - Synthesis failure: no resume prompt is queued; inspect the failed artifact path if one was written.
 - Write failure: no resume prompt is queued; fix filesystem permissions or artifact path.
-- Stale pending artifact: `/continuity status` reports it as inert; v0.1.x will not silently inject it after reload.
-- Native Pi auto-compaction warning: add project-local Pi settings with `compaction.enabled=false` if Pi Session Continuity should own automatic threshold handoffs. PSC v0.1.2 does not arbitrate with native auto-compaction.
+- Stale pending artifact: `/continuity status` reports it as inert; v0.1.0 will not silently inject it after reload.
+- Native Pi auto-compaction warning: add project-local Pi settings with `compaction.enabled=false` if Pi Session Continuity should own automatic threshold handoffs. Manual `/compact` remains available.
 - Untrusted project: trust the project before relying on project-local config or automatic behavior.
 
 ## Update / uninstall

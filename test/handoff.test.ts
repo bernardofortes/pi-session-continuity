@@ -137,67 +137,35 @@ describe("continuity handoff", () => {
 		expect(bounded).not.toContain(oldestMarker);
 	});
 
-	it("passes bounded branch material to injected synthesizers", async () => {
+	it("saves a checkpoint without queuing a resume prompt on manual checkpoint", async () => {
 		const config = await loadConfigFromDisk(dir, ".pi", true);
-		const ctx = fakeCtx({
-			model: { provider: "test", id: "model", contextWindow: 272_000 } as never,
-			getContextUsage: () => ({
-				tokens: 204_000,
-				contextWindow: 272_000,
-				percent: 75,
-			}),
-		});
-		const oldestMarker = "OLDEST_BRANCH_MARKER: this should be omitted";
-		const recentMarker = "RECENT_BRANCH_MARKER: keep the latest action";
-		(
-			ctx.sessionManager as unknown as {
-				getBranch: () => Array<{ type: "message"; message: unknown }>;
-			}
-		).getBranch = () => [
-			{
-				type: "message",
-				message: {
-					role: "user",
-					content: [
-						{
-							type: "text",
-							text: `${oldestMarker}\n${"OLDER_BRANCH_MATERIAL".repeat(40_000)}`,
-						},
-					],
-					timestamp: 1,
-				},
-			},
-			{
-				type: "message",
-				message: {
-					role: "user",
-					content: [{ type: "text", text: recentMarker }],
-					timestamp: 2,
-				},
-			},
-		];
-		let capturedConversation = "";
+		const sent: string[] = [];
+		const ctx = fakeCtx();
 		const result = await runContinuityHandoff(
-			{ sendUserMessage: vi.fn() },
+			{ sendUserMessage: (text: string) => sent.push(text) },
 			ctx,
 			config,
 			createHandoffState(),
 			{
 				reason: "manual",
-				synthesize: async (input) => {
-					capturedConversation = input.conversationText;
-					return body();
-				},
+				requestCompaction: false,
+				synthesize: async () => body(),
 			},
 		);
 
 		expect(result.ok).toBe(true);
-		expect(capturedConversation.length).toBeLessThanOrEqual(
-			deriveSynthesisTranscriptBudgetTokens(272_000) * 3,
-		);
-		expect(capturedConversation).toContain("synthesis input bounded");
-		expect(capturedConversation).toContain(recentMarker);
-		expect(capturedConversation).not.toContain(oldestMarker);
+		expect(result.pendingPath).toBeTruthy();
+		expect(result.archivePath).toBeUndefined();
+		expect(sent).toEqual([]);
+		const pending = await readFile(result.pendingPath!, "utf8");
+		expect(pending).toContain('status: "pending"');
+		expect(pending).toContain("# Continuity Brief");
+
+		const notifications = (
+			ctx as unknown as { ui: { notifications: string[] } }
+		).ui.notifications.join("\n");
+		expect(notifications).toContain(result.pendingPath);
+		expect(notifications).toContain("To recover");
 	});
 
 	it("writes a valid artifact, queues prompt from the exact disk artifact, and archives", async () => {
@@ -227,7 +195,8 @@ describe("continuity handoff", () => {
 			config,
 			createHandoffState(),
 			{
-				reason: "manual",
+				reason: "threshold",
+				requestCompaction: false,
 				synthesize: async () => body(),
 			},
 		);
@@ -276,7 +245,8 @@ describe("continuity handoff", () => {
 			config,
 			createHandoffState(),
 			{
-				reason: "manual",
+				reason: "threshold",
+				requestCompaction: false,
 				synthesize: async () => body(),
 			},
 		);
@@ -291,56 +261,6 @@ describe("continuity handoff", () => {
 		expect(archives).not.toContain("2000-01-01T00-00-00-000Z-old-0.md");
 		expect(archives).not.toContain("2000-01-01T00-00-01-000Z-old-1.md");
 		expect(archives).not.toContain("2000-01-01T00-00-02-000Z-old-2.md");
-	});
-
-	it("aborts the active run after the brief is saved but before compaction on threshold handoffs", async () => {
-		const config = await loadConfigFromDisk(dir, ".pi", true);
-		const callOrder: string[] = [];
-		const ctx = fakeCtx({
-			isIdle: () => true,
-			compact: vi.fn(() => {
-				callOrder.push("compact");
-			}),
-			abort: vi.fn(() => callOrder.push("abort")),
-		});
-		const result = await runContinuityHandoff(
-			{ sendUserMessage: vi.fn() },
-			ctx,
-			config,
-			createHandoffState(),
-			{
-				reason: "threshold",
-				requestCompaction: true,
-				synthesize: async () => {
-					callOrder.push("synthesize");
-					return body();
-				},
-			},
-		);
-
-		expect(result.ok).toBe(true);
-		expect(callOrder).toEqual(["synthesize", "abort", "compact"]);
-	});
-
-	it("does not abort on manual checkpoint without compaction", async () => {
-		const config = await loadConfigFromDisk(dir, ".pi", true);
-		const ctx = fakeCtx({
-			abort: vi.fn(),
-		});
-		const result = await runContinuityHandoff(
-			{ sendUserMessage: vi.fn() },
-			ctx,
-			config,
-			createHandoffState(),
-			{
-				reason: "manual",
-				requestCompaction: false,
-				synthesize: async () => body(),
-			},
-		);
-
-		expect(result.ok).toBe(true);
-		expect(ctx.abort).not.toHaveBeenCalled();
 	});
 
 	it("queues no prompt when synthesis fails and writes failed postmortem when possible", async () => {
@@ -456,7 +376,8 @@ describe("continuity handoff", () => {
 			config,
 			createHandoffState(),
 			{
-				reason: "manual",
+				reason: "threshold",
+				requestCompaction: false,
 				synthesize: async () => body(),
 			},
 		);
@@ -588,7 +509,8 @@ describe("continuity handoff", () => {
 			config,
 			createHandoffState(),
 			{
-				reason: "manual",
+				reason: "threshold",
+				requestCompaction: false,
 				synthesize: async () => body(),
 			},
 		);
@@ -706,9 +628,7 @@ describe("continuity handoff", () => {
 
 		onComplete?.();
 		await waitFor(() => expect(sent).toHaveLength(1));
-		await waitFor(() =>
-			expect(state.lastFailure).toContain("post-queue artifact update failed"),
-		);
+		expect(state.lastFailure).toContain("post-queue artifact update failed");
 		expect(
 			readdirSync(join(config.artifactDirectoryPath, "session-a", "lock")),
 		).toEqual([]);

@@ -37,18 +37,8 @@ Consequences:
 - The extension must write the Continuity Brief before queuing a resume prompt.
 - The queued resume prompt must be read from the saved artifact, not regenerated from memory.
 - A failed synthesis or failed artifact write must not queue a resume prompt.
-- Native Pi compaction may be requested for token hygiene only after a valid Continuity Brief has been saved and re-read from disk; continuity must not depend on proving that compaction happened.
+- Native Pi compaction may be used for token management, but continuity must not depend on proving that compaction happened.
 - If synthesis fails before a valid brief exists, the extension should write a failed postmortem artifact when possible, but that artifact is never resume input.
-
-End-to-end automatic handoff flow:
-
-```text
-save and validate Continuity Brief on disk
-→ request native compaction as token hygiene, preserving configured recent useful raw tokens
-→ queue/reinject the resume prompt from the saved disk artifact
-```
-
-The saved disk artifact is the continuity source of truth throughout that flow.
 
 ## 4. Non-goals for v0/v0.1.0
 
@@ -66,9 +56,7 @@ This spec uses one version axis:
 
 - `v0` — manual local dogfood checkpoint.
 - `v0.1.0` — first public/dogfood release target.
-- `v0.1.2` — safe-boundary automatic trigger update.
-- `v0.1.3` — synthesis input budget so 75% threshold handoffs can fit.
-- `v0.2+` — later enhancements after v0.1.x is proven.
+- `v0.2+` — later enhancements after v0.1.0 is proven.
 
 The artifact `kind: pi-session-continuity/v1` is the artifact schema version, not the package release version.
 
@@ -96,7 +84,7 @@ Default threshold config:
 }
 ```
 
-`triggerAtPercent` means: start the Continuity Handoff when current context usage reaches this percentage of the active model's context window. The default is intentionally 75%; the implementation must make synthesis fit at that threshold instead of lowering the default to hide synthesis-budget failures.
+`triggerAtPercent` means: start the Continuity Handoff when current context usage reaches this percentage of the active model's context window.
 
 `keepRecentPercent` means: derive native Pi `keepRecentTokens` as approximately this percentage of the active model's context window when Pi compaction settings are updated or native compaction is requested. It preserves the semantic intent of “keep the newest useful raw context” across models with different context windows.
 
@@ -105,34 +93,6 @@ v0.1.0 may request native Pi compaction as token hygiene only after the Continui
 Because Pi native auto-compaction is enabled by default, Pi Session Continuity must warn on session load when native Pi auto-compaction is still enabled while Pi Session Continuity automatic behavior is enabled. The warning must explain that native auto-compaction can compete with Continuity Handoff triggers and recommend disabling native auto-compaction in project-local Pi settings (`<workspace>/<CONFIG_DIR_NAME>/settings.json`) by setting `compaction.enabled` to `false`. The extension must not silently mutate Pi settings during install or load.
 
 Continuity Brief synthesis must reserve enough output budget for reasoning-capable models so effort tokens do not starve the final Markdown body. If threshold-triggered synthesis fails, automatic behavior should not retry on every subsequent turn; it should cool down and leave manual `/continuity checkpoint` available.
-
-### v0.1.2: safe-boundary automatic trigger update
-
-v0.1.2 changes the automatic trigger boundary. The automatic trigger no longer runs from `turn_end`. It runs from the Pi `context` hook before the next provider request, and only when the message context ends with a complete assistant/tool-result batch. A complete batch means the last assistant message's tool-call ids exactly match the immediately following tool-result ids and every tool result is structurally complete.
-
-This keeps automatic handoff checks after a full assistant/tool-result batch has settled and before the next model request is sent. It intentionally does not implement complex `session_before_compact` arbitration or coexistence with native Pi auto-compaction.
-
-Reliable automatic Pi Session Continuity handoffs require native Pi auto-compaction to be disabled. Native Pi auto-compaction is unsupported/not recommended for reliable automatic handoffs because it can compact before PSC writes and queues its disk-backed handoff. PSC must warn strongly and recommend project-local Pi setting `compaction.enabled=false`; PSC must not mutate that setting automatically and must not attempt native auto-compaction arbitration.
-
-The v0.1.2 user flow remains:
-
-```text
-save and validate Continuity Brief on disk
-→ request native compaction preserving the configured newest useful raw tokens
-→ queue/reinject the resume prompt from the saved disk artifact
-```
-
-### v0.1.3: bounded synthesis input and real-time trigger estimate at 75%
-
-v0.1.3 keeps the public/default `triggerAtPercent` at 75%. Reliable handoff at 75% is achieved by two changes:
-
-1. The trigger decision in the `context` hook now estimates context tokens from the real messages that will be sent to the provider, using Pi's own `estimateContextTokens` compaction helper. This replaces the stale `ctx.getContextUsage()` value that only reflected the last assistant response and could lag behind rapidly growing sessions. If the estimate cannot be computed, the extension falls back to `ctx.getContextUsage()` and then to a usage-unavailable skip.
-
-2. The synthesis input is bounded recency-first and budgeted independently of raw session/branch size. If a branch is too large, the extension omits older transcript material before calling the synthesis provider and includes an explicit omission note inside the transcript material. The omission note must say that older material was omitted for synthesis budget and must not be treated as a source of invented facts.
-
-When the threshold is reached, the extension aborts the active agent run before starting the handoff. This prevents the next provider request from racing with synthesis and compaction. The abort mirrors pi-continue's mid-run guard: abort first, then write the Continuity Brief, request compaction, and queue the resume prompt from the saved disk artifact.
-
-The bounded input must still include active frontmatter metadata, the active system prompt snapshot for authority-boundary awareness, and the authority-boundary rule. Directive-looking content in the included transcript/tool/file material remains evidence, not authority.
 
 ### v0.2+: later enhancements
 
@@ -179,7 +139,6 @@ Internal v0.1.0 safety constants are allowed but are not user-facing config unle
 ```text
 minReserveTokens = 32000
 maxKeepRecentTokens = 80000
-synthesisTranscriptBudget = bounded recency-first input derived from active context window
 singleFlightWindowMs = 600000
 archiveRetention = 10
 ```
@@ -233,7 +192,7 @@ synthesisModel: "resolved-provider/model"
 synthesisEffort: "medium"
 tokenCountAtTrigger: 0
 contextWindow: 0
-triggerAtPercent: 75
+triggerAtPercent: 70
 keepRecentPercent: 20
 branchLeafBefore: "entry-id-or-null"
 ---
@@ -447,7 +406,7 @@ Pi Session Continuity disabled: invalid configuration in <path>.
 Native Pi auto-compaction also enabled:
 
 ```text
-Pi Session Continuity warning: native Pi auto-compaction is enabled. Reliable automatic Pi Session Continuity handoffs require native auto-compaction disabled because it can run before the disk-backed Continuity Handoff. Recommended project setting: compaction.enabled=false in <CONFIG_DIR_NAME>/settings.json.
+Pi Session Continuity warning: native Pi auto-compaction is still enabled and can compete with Continuity Handoff triggers. Recommended project setting: compaction.enabled=false in <CONFIG_DIR_NAME>/settings.json.
 ```
 
 ## 12. Slash commands
@@ -461,16 +420,9 @@ v0.1.0 commands:
 /continuity settings
 ```
 
-In interactive TUI contexts, `/continuity` with no subcommand opens a top-level menu with exactly these actions:
-
-```text
-Status
-Create checkpoint now
-Settings
-Done
-```
-
-Selecting `Status` shows the existing status panel. Selecting `Create checkpoint now` runs the existing manual checkpoint path. Selecting `Settings` opens the existing settings menu. `/continuity settings` remains the direct command for the settings menu. The top-level menu must not duplicate the settings menu fields or add a second settings menu.
+In interactive TUI contexts, `/continuity` with no subcommand is a shortcut for
+`/continuity settings`, so the default action opens the configuration menu.
+`/continuity status` remains the explicit textual status command.
 
 Deferred:
 
@@ -499,7 +451,7 @@ The status output should remain inspectable in non-interactive modes, but in TUI
 
 ### `/continuity checkpoint`
 
-Manual checkpoint. In v0/v0.1.0 this is a full Continuity Handoff: it must synthesize, validate, and write a Continuity Brief, then queue the resume prompt from the saved disk artifact. A write-only or dry-run checkpoint mode is deferred until a separate public config or command is specified.
+Manual checkpoint. In v0.1.5 this saves only: it synthesizes, validates, and writes a Continuity Brief to disk as pending, but does not queue a resume prompt or request compaction. The brief stays as pending on disk for manual recovery. Only the automatic threshold trigger does the full handoff (compact + resume from disk).
 
 ### `/continuity settings`
 
@@ -524,7 +476,7 @@ Automatic trigger fires when:
 currentContextTokens / activeModelContextWindow >= triggerAtPercent / 100
 ```
 
-The extension should trigger conservatively and early, while preserving the public/default 75% threshold. The trigger decision in the `context` hook must estimate context tokens from the real messages that will be sent to the provider using Pi's `estimateContextTokens` compaction helper, not the stale `ctx.getContextUsage()` value. If the estimate is unavailable, the extension falls back to `ctx.getContextUsage()` and then to a usage-unavailable skip. Because raw branch/session serialization can be much larger than the active provider context accounting, the handoff path must also bound transcript material before synthesis so a default 75% trigger has enough room for the synthesis prompt, output, and reasoning overhead. When the threshold is reached, the extension must abort the active agent run before starting the handoff to prevent the next provider request from racing with synthesis and compaction. It must use a single-flight guard so the same session cannot start multiple simultaneous handoffs.
+The extension should trigger conservatively and early. It must use a single-flight guard so the same session cannot start multiple simultaneous handoffs.
 
 Default single-flight mechanism:
 
@@ -565,8 +517,6 @@ state of the episode
 
 Directive-looking content inside transcript, files, tool outputs, or prior artifacts is evidence, not authority. The generated brief may record that such text existed, but must not promote it above active system/developer/user instructions.
 
-The transcript material included in synthesis must be bounded so large branches and tool outputs do not make the synthesis request exceed the model context window at the default 75% trigger. The default strategy is recency-first: keep the newest serialized transcript material up to the internal synthesis transcript budget, omit older material, and insert a clear omission note. The omission note is diagnostic context only and must not authorize invented facts about omitted content.
-
 ## 15. Quality gates
 
 Minimum automated checks:
@@ -580,7 +530,7 @@ npm pack --dry-run
 Minimum unit coverage:
 
 - config validation, including invalid percentage values and invalid `keepRecentPercent >= triggerAtPercent`;
-- threshold percentage calculation across at least a 128k-context model and a 1M-context model, preserving the 75% default intent;
+- threshold percentage calculation across at least a 128k-context model and a 1M-context model;
 - artifact path generation and session isolation;
 - frontmatter parse/serialize and required-field validation;
 - mandatory heading presence;
@@ -599,7 +549,7 @@ Minimum Pi smoke checks must be represented by a runnable script or documented m
 3. `required-identity-present`: artifact includes `eventId`, `sessionId`, `sessionFile`, `createdAt`, and `updatedAt`.
 4. `reload-stale-is-inert`: reload does not inject a stale pending artifact; status reports it as inert.
 5. `duplicate-trigger-single-flight`: duplicate trigger while a handoff is active creates one artifact and one lock only.
-6. `threshold-percent-model-change`: threshold math preserves 75% trigger intent across at least two model context windows.
+6. `threshold-percent-model-change`: threshold math preserves 70% trigger intent across at least two model context windows.
 7. `synthesis-failure-no-prompt`: forced synthesis failure queues no resume prompt and reports failure.
 8. `write-failure-no-prompt`: forced artifact write failure queues no resume prompt and reports failure.
 9. `cross-session-rejected`: artifact from another `sessionId` is not used automatically.
@@ -671,8 +621,7 @@ Implementation must bind the product behavior to explicit Pi APIs:
 
 - Register one command, `continuity`, and dispatch subcommands from its args so users invoke `/continuity status`, `/continuity checkpoint`, and `/continuity settings`.
 - Use `session_start` to initialize session-scoped state, inspect stale same-session pending artifacts, warn when native Pi auto-compaction is still enabled while Pi Session Continuity automatic behavior is enabled, and set visible status when UI is available.
-- For v0.1.2 automatic threshold checks, use the Pi `context` hook before the next provider request, not `turn_end`. The hook may trigger only when the supplied message context ends with a complete assistant/tool-result batch: the last assistant message's tool-call ids exactly match the immediately following tool-result ids, and every tool result is structurally complete/valid.
-- The threshold calculation must use `ctx.getContextUsage()` and the active model context window; if usage or model metadata is unavailable, automatic behavior skips with a visible/debuggable reason without repeated warning spam.
+- Use `turn_end` or another documented low-risk post-turn event for automatic threshold checks. The threshold calculation must use `ctx.getContextUsage()` and the active model context window; if usage or model metadata is unavailable, automatic behavior skips with a visible/debuggable reason.
 - Use a single-flight in-memory latch plus the on-disk lock sentinel before synthesis starts.
 - Use `ctx.sessionManager.getSessionId()`, `ctx.sessionManager.getSessionFile()`, `ctx.sessionManager.getLeafId()`, and `ctx.sessionManager.getBranch()` when constructing artifact identity and synthesis input.
 - Use the resolved `synthesisModel` through Pi's model registry and auth APIs. If the selected synthesis model cannot be resolved or authenticated, synthesis fails clearly and queues no prompt.
@@ -680,11 +629,10 @@ Implementation must bind the product behavior to explicit Pi APIs:
   has been written and re-read from disk. Use the documented non-interrupting
   delivery mode, normally `deliverAs: "followUp"`, for the resume continuation.
 - If native compaction is requested as token hygiene for the same handoff, write
-  and re-read the Continuity Brief first, call `ctx.compact()` with instructions
-  preserving the configured newest useful raw tokens, and queue the resume prompt
-  from the saved disk artifact only after compaction completes. Compaction
-  failure must not invalidate the saved artifact, but it must not race a resume
-  prompt ahead of the compaction.
+  and re-read the Continuity Brief first, call `ctx.compact()`, and queue the
+  resume prompt from the saved disk artifact only after compaction completes.
+  Compaction failure must not invalidate the saved artifact, but it must not
+  race a resume prompt ahead of the compaction.
 - Use `session_shutdown` only for cleanup of session-scoped resources. Do not start long-lived timers, watchers, sockets, or background processes from the extension factory.
 - In non-UI modes, commands must return textual status through Pi-supported command output/notifications without requiring dialogs.
 

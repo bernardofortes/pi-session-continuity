@@ -1,24 +1,15 @@
 # Changelog
 
-## 0.1.4 — 2026-07-11
-
-- Fix synthesis abort: move `ctx.abort()` from before the handoff to after the Continuity Brief is written to disk and before compaction. Previously, aborting before synthesis killed the synthesis provider call via `ctx.signal`.
-
-## 0.1.3 — 2026-07-11
+## 0.1.5 — 2026-07-11
 
 - Restore the public/default automatic trigger threshold to 75%.
-- Estimate context tokens from the real messages that will be sent to the provider, not the stale `ctx.getContextUsage()` value that only reflects the last assistant response. This mirrors pi-continue's mid-run guard and is the reason the trigger actually fires at 75% in production.
-- Abort the active agent run before handoff so the next provider request does not race with synthesis and compaction.
-- Bound synthesis transcript input recency-first so large branches/tool outputs do not make the Continuity Brief synthesis request exceed the model context window at the 75% trigger.
-
-## 0.1.2 — 2026-07-11
-
-- Move automatic threshold checks from `turn_end` to the Pi `context` hook before the next provider request.
-- Add a safe-boundary guard so automatic handoffs only run after a complete assistant/tool-result batch.
-- Change `/continuity` with no args to open a top-level menu: Status, Create checkpoint now, Settings, Done; `/continuity settings` remains direct.
-- Strengthen the native Pi auto-compaction warning: reliable automatic PSC handoffs require `compaction.enabled=false`; no native compaction arbitration is implemented.
-- Suppress repeated context-usage-unavailable warnings for the same session/config while preserving one visible diagnostic.
+- Keep the `turn_end` automatic trigger from v0.1.1 (revert the `context` hook experiment from v0.1.2-v0.1.4). The automatic trigger now measures against `ctx.getContextUsage()` only, which reflects the last assistant response. The message-aware token estimator from v0.1.3 (`estimateContextTokensFromMessages`) and the complete-batch guard (`hasCompleteAssistantToolResultBatch`) were removed alongside the `context` hook.
+- Change `/continuity checkpoint` (manual) to save only: it writes the Continuity Brief to disk as pending but does not queue a resume prompt or request compaction. Only the automatic threshold trigger does the full handoff (compact + resume from disk).
+- Change `/continuity` with no args to open a top-level menu: Status, Create checkpoint now, Settings, Done.
 - Add a duplicate runtime-load guard so only the first package copy registers commands/events in a process/runtime.
+- Bound synthesis transcript input recency-first so large branches/tool outputs do not make the Continuity Brief synthesis request exceed the model context window.
+- Suppress repeated context-usage-unavailable warnings for the same session/config.
+- Strengthen the native Pi auto-compaction warning.
 
 ## 0.1.1 — 2026-07-09
 
