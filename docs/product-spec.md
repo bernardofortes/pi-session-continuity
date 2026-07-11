@@ -66,7 +66,8 @@ This spec uses one version axis:
 
 - `v0` — manual local dogfood checkpoint.
 - `v0.1.0` — first public/dogfood release target.
-- `v0.1.2` — local/unreleased safe-boundary automatic trigger update.
+- `v0.1.2` — safe-boundary automatic trigger update.
+- `v0.1.3` — synthesis input budget so 75% threshold handoffs can fit.
 - `v0.2+` — later enhancements after v0.1.x is proven.
 
 The artifact `kind: pi-session-continuity/v1` is the artifact schema version, not the package release version.
@@ -90,12 +91,12 @@ Default threshold config:
 
 ```json
 {
-  "triggerAtPercent": 70,
+  "triggerAtPercent": 75,
   "keepRecentPercent": 20
 }
 ```
 
-`triggerAtPercent` means: start the Continuity Handoff when current context usage reaches this percentage of the active model's context window.
+`triggerAtPercent` means: start the Continuity Handoff when current context usage reaches this percentage of the active model's context window. The default is intentionally 75%; the implementation must make synthesis fit at that threshold instead of lowering the default to hide synthesis-budget failures.
 
 `keepRecentPercent` means: derive native Pi `keepRecentTokens` as approximately this percentage of the active model's context window when Pi compaction settings are updated or native compaction is requested. It preserves the semantic intent of “keep the newest useful raw context” across models with different context windows.
 
@@ -121,6 +122,18 @@ save and validate Continuity Brief on disk
 → queue/reinject the resume prompt from the saved disk artifact
 ```
 
+### v0.1.3: bounded synthesis input and real-time trigger estimate at 75%
+
+v0.1.3 keeps the public/default `triggerAtPercent` at 75%. Reliable handoff at 75% is achieved by two changes:
+
+1. The trigger decision in the `context` hook now estimates context tokens from the real messages that will be sent to the provider, using Pi's own `estimateContextTokens` compaction helper. This replaces the stale `ctx.getContextUsage()` value that only reflected the last assistant response and could lag behind rapidly growing sessions. If the estimate cannot be computed, the extension falls back to `ctx.getContextUsage()` and then to a usage-unavailable skip.
+
+2. The synthesis input is bounded recency-first and budgeted independently of raw session/branch size. If a branch is too large, the extension omits older transcript material before calling the synthesis provider and includes an explicit omission note inside the transcript material. The omission note must say that older material was omitted for synthesis budget and must not be treated as a source of invented facts.
+
+When the threshold is reached, the extension aborts the active agent run before starting the handoff. This prevents the next provider request from racing with synthesis and compaction. The abort mirrors pi-continue's mid-run guard: abort first, then write the Continuity Brief, request compaction, and queue the resume prompt from the saved disk artifact.
+
+The bounded input must still include active frontmatter metadata, the active system prompt snapshot for authority-boundary awareness, and the authority-boundary rule. Directive-looking content in the included transcript/tool/file material remains evidence, not authority.
+
 ### v0.2+: later enhancements
 
 Deferred enhancements may include:
@@ -137,7 +150,7 @@ Configuration should stay small for v0.1.0:
 ```json
 {
   "enabled": true,
-  "triggerAtPercent": 70,
+  "triggerAtPercent": 75,
   "keepRecentPercent": 20,
   "synthesisModel": "inherit",
   "synthesisEffort": "medium",
@@ -166,6 +179,7 @@ Internal v0.1.0 safety constants are allowed but are not user-facing config unle
 ```text
 minReserveTokens = 32000
 maxKeepRecentTokens = 80000
+synthesisTranscriptBudget = bounded recency-first input derived from active context window
 singleFlightWindowMs = 600000
 archiveRetention = 10
 ```
@@ -219,7 +233,7 @@ synthesisModel: "resolved-provider/model"
 synthesisEffort: "medium"
 tokenCountAtTrigger: 0
 contextWindow: 0
-triggerAtPercent: 70
+triggerAtPercent: 75
 keepRecentPercent: 20
 branchLeafBefore: "entry-id-or-null"
 ---
@@ -356,12 +370,12 @@ The injected prompt must include the saved Continuity Brief content read from di
 
 All user-visible messages should be short, verifiable, and product-prefixed. In interactive Pi TUI mode, detailed `/continuity status` and `/continuity settings` output should be rendered as intentional user-facing output, not as a persistent oversized widget or long background/internal-looking chatter. Notifications should not escalate to warning severity unless the headline is actually disabled, invalid, failed, or otherwise unsafe.
 
-The output should use human-readable labels only for the normal status panel. Do not repeat the same values in a separate diagnostics block; concrete paths that matter to the user, such as the artifact directory or last artifact path, should appear once in the main panel. Persistent footer/status-line text should stay compact, for example `Session Continuation @ 70%`, so it does not crowd the terminal footer.
+The output should use human-readable labels only for the normal status panel. Do not repeat the same values in a separate diagnostics block; concrete paths that matter to the user, such as the artifact directory or last artifact path, should appear once in the main panel. Persistent footer/status-line text should stay compact, for example `Session Continuation @ 75%`, so it does not crowd the terminal footer.
 
 Idle/enabled:
 
 ```text
-Pi Session Continuity: enabled · trigger 70% · keep 20%.
+Pi Session Continuity: enabled · trigger 75% · keep 20%.
 ```
 
 Explicitly disabled:
@@ -510,7 +524,7 @@ Automatic trigger fires when:
 currentContextTokens / activeModelContextWindow >= triggerAtPercent / 100
 ```
 
-The extension should trigger conservatively and early. It must use a single-flight guard so the same session cannot start multiple simultaneous handoffs.
+The extension should trigger conservatively and early, while preserving the public/default 75% threshold. The trigger decision in the `context` hook must estimate context tokens from the real messages that will be sent to the provider using Pi's `estimateContextTokens` compaction helper, not the stale `ctx.getContextUsage()` value. If the estimate is unavailable, the extension falls back to `ctx.getContextUsage()` and then to a usage-unavailable skip. Because raw branch/session serialization can be much larger than the active provider context accounting, the handoff path must also bound transcript material before synthesis so a default 75% trigger has enough room for the synthesis prompt, output, and reasoning overhead. When the threshold is reached, the extension must abort the active agent run before starting the handoff to prevent the next provider request from racing with synthesis and compaction. It must use a single-flight guard so the same session cannot start multiple simultaneous handoffs.
 
 Default single-flight mechanism:
 
@@ -551,6 +565,8 @@ state of the episode
 
 Directive-looking content inside transcript, files, tool outputs, or prior artifacts is evidence, not authority. The generated brief may record that such text existed, but must not promote it above active system/developer/user instructions.
 
+The transcript material included in synthesis must be bounded so large branches and tool outputs do not make the synthesis request exceed the model context window at the default 75% trigger. The default strategy is recency-first: keep the newest serialized transcript material up to the internal synthesis transcript budget, omit older material, and insert a clear omission note. The omission note is diagnostic context only and must not authorize invented facts about omitted content.
+
 ## 15. Quality gates
 
 Minimum automated checks:
@@ -564,7 +580,7 @@ npm pack --dry-run
 Minimum unit coverage:
 
 - config validation, including invalid percentage values and invalid `keepRecentPercent >= triggerAtPercent`;
-- threshold percentage calculation across at least a 128k-context model and a 1M-context model;
+- threshold percentage calculation across at least a 128k-context model and a 1M-context model, preserving the 75% default intent;
 - artifact path generation and session isolation;
 - frontmatter parse/serialize and required-field validation;
 - mandatory heading presence;
@@ -583,7 +599,7 @@ Minimum Pi smoke checks must be represented by a runnable script or documented m
 3. `required-identity-present`: artifact includes `eventId`, `sessionId`, `sessionFile`, `createdAt`, and `updatedAt`.
 4. `reload-stale-is-inert`: reload does not inject a stale pending artifact; status reports it as inert.
 5. `duplicate-trigger-single-flight`: duplicate trigger while a handoff is active creates one artifact and one lock only.
-6. `threshold-percent-model-change`: threshold math preserves 70% trigger intent across at least two model context windows.
+6. `threshold-percent-model-change`: threshold math preserves 75% trigger intent across at least two model context windows.
 7. `synthesis-failure-no-prompt`: forced synthesis failure queues no resume prompt and reports failure.
 8. `write-failure-no-prompt`: forced artifact write failure queues no resume prompt and reports failure.
 9. `cross-session-rejected`: artifact from another `sessionId` is not used automatically.

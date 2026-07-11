@@ -103,6 +103,27 @@ describe("Continuity Brief synthesis model call", () => {
 		expect(options.apiKey).toBe("test-key");
 	});
 
+	it("bounds oversized transcript material before calling the synthesis provider", async () => {
+		const oldestMarker = "OLDEST_SYNTHESIS_MARKER";
+		const recentMarker = "RECENT_SYNTHESIS_MARKER";
+		await synthesizeWithModel(
+			{
+				frontmatter,
+				conversationText: `${oldestMarker}\n${"OLDER_SYNTHESIS_MATERIAL".repeat(40_000)}\n${recentMarker}`,
+				systemPrompt: "active system prompt",
+			},
+			ctx(),
+			config as never,
+		);
+
+		const [, context] = completeSimpleMock.mock.calls[0];
+		const prompt = context.messages[0].content[0].text;
+		expect(prompt).toContain("synthesis input bounded");
+		expect(prompt).toContain(recentMarker);
+		expect(prompt).not.toContain(oldestMarker);
+		expect(prompt.length).toBeLessThan(450_000);
+	});
+
 	it("reports empty model output with stop reason and token details", async () => {
 		completeSimpleMock.mockResolvedValue({
 			...assistantResponse,

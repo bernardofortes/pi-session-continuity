@@ -17,7 +17,7 @@ describe("config validation", () => {
 	it("accepts defaults and valid percentages", () => {
 		const result = validateConfig({}, path);
 		expect(result.errors).toEqual([]);
-		expect(result.config?.triggerAtPercent).toBe(70);
+		expect(result.config?.triggerAtPercent).toBe(75);
 		expect(result.config?.keepRecentPercent).toBe(20);
 		expect(result.config?.synthesisEffort).toBe("medium");
 	});
@@ -51,9 +51,10 @@ describe("config validation", () => {
 	});
 
 	it("calculates trigger percentage across different context windows", () => {
-		expect(shouldTriggerHandoff(89_600, 128_000, 70)).toBe(true);
-		expect(shouldTriggerHandoff(699_999, 1_000_000, 70)).toBe(false);
-		expect(shouldTriggerHandoff(700_000, 1_000_000, 70)).toBe(true);
+		expect(shouldTriggerHandoff(95_999, 128_000, 75)).toBe(false);
+		expect(shouldTriggerHandoff(96_000, 128_000, 75)).toBe(true);
+		expect(shouldTriggerHandoff(749_999, 1_000_000, 75)).toBe(false);
+		expect(shouldTriggerHandoff(750_000, 1_000_000, 75)).toBe(true);
 	});
 
 	it("derives keep recent tokens from active model context window", () => {
@@ -123,7 +124,7 @@ describe("config validation", () => {
 			).rejects.toThrow("artifactDirectory must resolve under");
 			const config = await loadConfigFromDisk(dir, ".pi", true);
 			expect(config.valid).toBe(true);
-			expect(config.triggerAtPercent).toBe(70);
+			expect(config.triggerAtPercent).toBe(75);
 		} finally {
 			await rm(dir, { recursive: true, force: true });
 		}

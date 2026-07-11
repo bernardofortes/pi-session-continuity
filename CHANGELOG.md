@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 — 2026-07-11
+
+- Restore the public/default automatic trigger threshold to 75%.
+- Estimate context tokens from the real messages that will be sent to the provider, not the stale `ctx.getContextUsage()` value that only reflects the last assistant response. This mirrors pi-continue's mid-run guard and is the reason the trigger actually fires at 75% in production.
+- Abort the active agent run before handoff so the next provider request does not race with synthesis and compaction.
+- Bound synthesis transcript input recency-first so large branches/tool outputs do not make the Continuity Brief synthesis request exceed the model context window at the 75% trigger.
+
 ## 0.1.2 — 2026-07-11
 
 - Move automatic threshold checks from `turn_end` to the Pi `context` hook before the next provider request.

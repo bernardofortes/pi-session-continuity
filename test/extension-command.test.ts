@@ -72,6 +72,11 @@ vi.mock("@earendil-works/pi-ai/compat", async (importOriginal) => {
 	};
 });
 
+const estimateMock = vi.hoisted(() => vi.fn());
+vi.mock("../../src/pi-internals.js", () => ({
+	estimateContextTokensFromMessages: estimateMock,
+}));
+
 import sessionContinuityExtension from "../extensions/session-continuity/index.js";
 
 let dir: string;
@@ -171,6 +176,7 @@ function fakeCtx(
 			find: vi.fn(),
 		} as never,
 		getContextUsage: () => ({ tokens: 750, contextWindow: 1000, percent: 75 }),
+		abort: vi.fn(),
 		getSystemPrompt: () => "active system prompt",
 		compact: vi.fn((options?: { onComplete?: () => void }) =>
 			options?.onComplete?.(),
@@ -414,12 +420,20 @@ describe("continuity command dispatch", () => {
 			expect.any(Function),
 		);
 
+		estimateMock.mockResolvedValue({
+			tokens: 800,
+			usageTokens: 0,
+			trailingTokens: 800,
+			lastUsageIndex: null,
+		});
+
 		await runtime.eventHandler("context")(
 			{ messages: safeBoundaryMessages() },
 			ctx,
 		);
 		await flushMicrotasks();
 
+		expect(ctx.abort).toHaveBeenCalledTimes(1);
 		expect(ctx.ui.notify).toHaveBeenCalledWith(
 			"Pi Session Continuity: context threshold reached; preparing Continuity Handoff.",
 			"info",
@@ -447,6 +461,8 @@ describe("continuity command dispatch", () => {
 		const runtime = fakePi();
 		sessionContinuityExtension(runtime.pi);
 		const ctx = fakeCtx({ getContextUsage: undefined as never });
+
+		estimateMock.mockResolvedValue(null);
 
 		await runtime.eventHandler("context")(
 			{ messages: safeBoundaryMessages() },

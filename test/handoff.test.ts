@@ -17,7 +17,12 @@ import {
 } from "../src/constants.js";
 import { buildResumePrompt } from "../src/artifact.js";
 import { loadConfigFromDisk } from "../src/config.js";
-import { createHandoffState, runContinuityHandoff } from "../src/handoff.js";
+import {
+	boundSynthesisTranscript,
+	createHandoffState,
+	deriveSynthesisTranscriptBudgetTokens,
+	runContinuityHandoff,
+} from "../src/handoff.js";
 
 let dir: string;
 
@@ -118,6 +123,83 @@ afterEach(async () => {
 });
 
 describe("continuity handoff", () => {
+	it("bounds synthesis transcript input recency-first for 75% handoffs", () => {
+		const budgetChars = deriveSynthesisTranscriptBudgetTokens(272_000) * 3;
+		const oldestMarker = "OLDEST_WORK_MARKER: this should be omitted";
+		const recentMarker = "RECENT_WORK_MARKER: preserve this newest context";
+		const transcript = `${oldestMarker}\n${"OLD_TRANSCRIPT_MATERIAL".repeat(40_000)}\n${recentMarker}`;
+		const bounded = boundSynthesisTranscript(transcript, 272_000);
+
+		expect(bounded.length).toBeLessThanOrEqual(budgetChars);
+		expect(bounded).toContain("synthesis input bounded");
+		expect(bounded).toContain("Do not invent facts from omitted material");
+		expect(bounded).toContain(recentMarker);
+		expect(bounded).not.toContain(oldestMarker);
+	});
+
+	it("passes bounded branch material to injected synthesizers", async () => {
+		const config = await loadConfigFromDisk(dir, ".pi", true);
+		const ctx = fakeCtx({
+			model: { provider: "test", id: "model", contextWindow: 272_000 } as never,
+			getContextUsage: () => ({
+				tokens: 204_000,
+				contextWindow: 272_000,
+				percent: 75,
+			}),
+		});
+		const oldestMarker = "OLDEST_BRANCH_MARKER: this should be omitted";
+		const recentMarker = "RECENT_BRANCH_MARKER: keep the latest action";
+		(
+			ctx.sessionManager as unknown as {
+				getBranch: () => Array<{ type: "message"; message: unknown }>;
+			}
+		).getBranch = () => [
+			{
+				type: "message",
+				message: {
+					role: "user",
+					content: [
+						{
+							type: "text",
+							text: `${oldestMarker}\n${"OLDER_BRANCH_MATERIAL".repeat(40_000)}`,
+						},
+					],
+					timestamp: 1,
+				},
+			},
+			{
+				type: "message",
+				message: {
+					role: "user",
+					content: [{ type: "text", text: recentMarker }],
+					timestamp: 2,
+				},
+			},
+		];
+		let capturedConversation = "";
+		const result = await runContinuityHandoff(
+			{ sendUserMessage: vi.fn() },
+			ctx,
+			config,
+			createHandoffState(),
+			{
+				reason: "manual",
+				synthesize: async (input) => {
+					capturedConversation = input.conversationText;
+					return body();
+				},
+			},
+		);
+
+		expect(result.ok).toBe(true);
+		expect(capturedConversation.length).toBeLessThanOrEqual(
+			deriveSynthesisTranscriptBudgetTokens(272_000) * 3,
+		);
+		expect(capturedConversation).toContain("synthesis input bounded");
+		expect(capturedConversation).toContain(recentMarker);
+		expect(capturedConversation).not.toContain(oldestMarker);
+	});
+
 	it("writes a valid artifact, queues prompt from the exact disk artifact, and archives", async () => {
 		const config = await loadConfigFromDisk(dir, ".pi", true);
 		const sent: Array<{ text: string; options?: unknown }> = [];

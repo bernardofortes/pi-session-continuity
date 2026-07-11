@@ -1,0 +1,75 @@
+{
+  "schema": "specforge.flow.lean-run-result.v1",
+  "run_id": "RUN-0018",
+  "status": "done-local-unreleased",
+  "intent_ref": "specforge/runs/RUN-0018/intent.md",
+  "intent_summary": [
+    "Keep Pi Session Continuity default triggerAtPercent at 75%.",
+    "Fix synthesis overflow at the 75% trigger by bounding transcript material sent to synthesis.",
+    "Preserve safe context-hook trigger boundary and durable-brief-first invariant."
+  ],
+  "base_commit": "84310b7f9004a00b7a0a2c3f07ec27b14bbaed3b",
+  "allowed_scope": [
+    "docs/product-spec.md",
+    "README.md",
+    "CHANGELOG.md",
+    "src/constants.ts",
+    "src/handoff.ts",
+    "test/config.test.ts",
+    "test/handoff.test.ts",
+    "test/status.test.ts",
+    "test/synthesis.test.ts",
+    "test/trigger.test.ts",
+    "specforge/runs/RUN-0018/**"
+  ],
+  "forbidden_scope": [
+    "git push/tag/release",
+    "npm publish",
+    ".claude/**",
+    "/home/ubuntu/.pi/**",
+    "global Pi settings mutation",
+    "lowering default trigger below 75 as the solution",
+    "turn_end automatic triggering"
+  ],
+  "changed_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/product-spec.md",
+    "src/constants.ts",
+    "src/handoff.ts",
+    "test/config.test.ts",
+    "test/handoff.test.ts",
+    "test/status.test.ts",
+    "test/synthesis.test.ts",
+    "test/trigger.test.ts",
+    "specforge/runs/RUN-0018/intent.md",
+    "specforge/runs/RUN-0018/review-r1.md",
+    "specforge/runs/RUN-0018/run-result.json"
+  ],
+  "claims": [
+    {
+      "claim": "Default triggerAtPercent is restored to 75% in runtime constants, docs, status expectations, and threshold tests.",
+      "evidence": ["src/constants.ts", "docs/product-spec.md", "README.md", "test/config.test.ts", "test/status.test.ts", "test/trigger.test.ts"]
+    },
+    {
+      "claim": "Synthesis input is bounded recency-first before provider calls and injected test synthesizers, preventing raw branch size from making synthesis overflow at the 75% threshold.",
+      "evidence": ["src/handoff.ts", "test/handoff.test.ts", "test/synthesis.test.ts"]
+    },
+    {
+      "claim": "Durable Continuity Brief first and resume-from-disk behavior remains intact; no turn_end trigger or native compaction arbitration was added.",
+      "evidence": ["src/handoff.ts", "extensions/session-continuity/index.ts", "review-r1.md"]
+    }
+  ],
+  "review_refs": ["review-r1.md"],
+  "validation_refs": ["validation command output in parent session after repair"],
+  "validation": [
+    { "cmd": "npm test", "result": "passed", "tests": 68 },
+    { "cmd": "npm run typecheck", "result": "passed" },
+    { "cmd": "npm pack --dry-run", "result": "passed" }
+  ],
+  "non_claims": [
+    "No npm package was published for this local follow-up.",
+    "No GitHub commit, push, tag, or release was created by this local follow-up.",
+    "No global Pi settings or .claude paths were changed."
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "specforge.flow.lean-run-result.v1",
+  "run_id": "RUN-0019",
+  "status": "done-local-unreleased",
+  "intent_ref": "specforge/runs/RUN-0019/intent.md",
+  "intent_summary": [
+    "Fix v0.1.2 trigger that does not fire in production because it uses stale ctx.getContextUsage().",
+    "Estimate context tokens from real event.messages using Pi's estimateContextTokens, like pi-continue.",
+    "Abort active agent run before handoff to prevent race with synthesis/compaction.",
+    "Keep default triggerAtPercent at 75%."
+  ],
+  "base_commit": "84310b7f9004a00b7a0a2c3f07ec27b14bbaed3b",
+  "allowed_scope": [
+    "src/pi-internals.ts",
+    "extensions/session-continuity/index.ts",
+    "test/extension-command.test.ts",
+    "test/pi-internals.test.ts",
+    "docs/product-spec.md",
+    "README.md",
+    "CHANGELOG.md",
+    "specforge/runs/RUN-0019/**"
+  ],
+  "forbidden_scope": [
+    "git push/tag/release",
+    "npm publish",
+    ".claude/**",
+    "/home/ubuntu/.pi/**",
+    "global Pi settings mutation",
+    "lowering default trigger below 75",
+    "turn_end automatic triggering"
+  ],
+  "changed_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/product-spec.md",
+    "extensions/session-continuity/index.ts",
+    "src/pi-internals.ts",
+    "test/extension-command.test.ts",
+    "test/pi-internals.test.ts",
+    "specforge/runs/RUN-0018/intent.md",
+    "specforge/runs/RUN-0018/review-r1.md",
+    "specforge/runs/RUN-0018/run-result.json",
+    "specforge/runs/RUN-0019/intent.md",
+    "specforge/runs/RUN-0019/review-r1.md",
+    "specforge/runs/RUN-0019/run-result.json"
+  ],
+  "claims": [
+    {
+      "claim": "The context hook estimates tokens from real event.messages using Pi's estimateContextTokens, not the stale ctx.getContextUsage() value.",
+      "evidence": ["src/pi-internals.ts", "extensions/session-continuity/index.ts", "test/pi-internals.test.ts", "review-r1.md"]
+    },
+    {
+      "claim": "The extension aborts the active agent run before starting the handoff, preventing the next provider request from racing with synthesis and compaction.",
+      "evidence": ["extensions/session-continuity/index.ts", "test/extension-command.test.ts", "review-r1.md"]
+    },
+    {
+      "claim": "When the estimate is unavailable, the extension falls back to ctx.getContextUsage() and then to a usage-unavailable skip.",
+      "evidence": ["extensions/session-continuity/index.ts", "test/extension-command.test.ts", "review-r1.md"]
+    },
+    {
+      "claim": "Default triggerAtPercent remains 75%.",
+      "evidence": ["src/constants.ts", "docs/product-spec.md", "test/config.test.ts", "test/trigger.test.ts"]
+    },
+    {
+      "claim": "Durable-brief-first and resume-from-disk invariant is preserved; abort strengthens it by preventing races.",
+      "evidence": ["src/handoff.ts", "review-r1.md"]
+    }
+  ],
+  "review_refs": ["review-r1.md"],
+  "validation": [
+    { "cmd": "npm test", "result": "passed", "tests": 70 },
+    { "cmd": "npm run typecheck", "result": "passed" },
+    { "cmd": "npm pack --dry-run", "result": "passed" }
+  ],
+  "non_claims": [
+    "No npm package was published for this local follow-up.",
+    "No GitHub commit, push, tag, or release was created by this local follow-up.",
+    "No global Pi settings or .claude paths were changed."
+  ]
+}

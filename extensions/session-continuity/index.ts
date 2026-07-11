@@ -32,6 +32,7 @@ import {
 	hasCompleteAssistantToolResultBatch,
 	type ContextUsageSnapshot,
 } from "../../src/trigger.js";
+import { estimateContextTokensFromMessages } from "../../src/pi-internals.js";
 
 type SessionContinuityRegistry = {
 	activeRuntimeKeys: WeakSet<object>;
@@ -298,7 +299,19 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		if (!hasCompleteAssistantToolResultBatch(event.messages)) return;
 
 		const config = currentConfig ?? (await refreshConfig(ctx));
-		const decision = decideAutomaticTrigger(config, getContextUsage(ctx));
+
+		// Estimate real context tokens from the messages that will be sent to the
+		// provider, not the stale ctx.getContextUsage() value that only reflects
+		// the last assistant response. This mirrors pi-continue's mid-run guard
+		// and is the reason the trigger actually fires at 75% in production.
+		const contextWindow = ctx.model?.contextWindow ?? 0;
+		const estimate = await estimateContextTokensFromMessages(event.messages);
+		const usage: ContextUsageSnapshot | undefined =
+			estimate !== null
+				? { tokens: estimate.tokens, contextWindow }
+				: getContextUsage(ctx);
+
+		const decision = decideAutomaticTrigger(config, usage);
 		if (!decision.shouldRun) {
 			if (
 				decision.reason === "usage-unavailable" ||
@@ -314,6 +327,12 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 		) {
 			return;
 		}
+
+		// Abort the active agent run before handoff so the next provider request
+		// does not race with synthesis and compaction. This mirrors pi-continue's
+		// mid-run guard: abort first, then write brief, compact, and resume.
+		ctx.abort();
+
 		ctx.ui.notify(
 			`${PRODUCT_NAME}: context threshold reached; preparing Continuity Handoff.`,
 			"info",

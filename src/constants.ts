@@ -56,13 +56,17 @@ export const ALLOWED_STATUSES = [
 	"failed",
 ] as const;
 
-export const DEFAULT_TRIGGER_AT_PERCENT = 70;
+export const DEFAULT_TRIGGER_AT_PERCENT = 75;
 export const DEFAULT_KEEP_RECENT_PERCENT = 20;
 export const DEFAULT_ARTIFACT_DIRECTORY = "session-continuity";
 export const DEFAULT_SYNTHESIS_MODEL = "inherit";
 export const DEFAULT_SYNTHESIS_EFFORT = "medium";
 
 export const SYNTHESIS_MAX_TOKENS = 32_768;
+export const SYNTHESIS_TRANSCRIPT_BUDGET_CONTEXT_PERCENT = 50;
+export const SYNTHESIS_TRANSCRIPT_MIN_TOKENS = 16_384;
+export const SYNTHESIS_TRANSCRIPT_MAX_TOKENS = 128_000;
+export const SYNTHESIS_CHARS_PER_TOKEN = 3;
 export const AUTOMATIC_FAILURE_COOLDOWN_MS = 600_000;
 export const SINGLE_FLIGHT_WINDOW_MS = 600_000;
 export const ARCHIVE_RETENTION_LIMIT = 10;

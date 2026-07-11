@@ -92,7 +92,7 @@ Defaults:
 ```json
 {
   "enabled": true,
-  "triggerAtPercent": 70,
+  "triggerAtPercent": 75,
   "keepRecentPercent": 20,
   "synthesisModel": "inherit",
   "synthesisEffort": "medium",
@@ -100,13 +100,17 @@ Defaults:
 }
 ```
 
-`synthesisEffort` controls Continuity Brief synthesis reasoning/thinking level and accepts `inherit`, `minimal`, `low`, `medium`, `high`, or `xhigh`. `artifactDirectory` resolves under `<workspace>/<CONFIG_DIR_NAME>/` unless absolute. Invalid config disables automatic behavior and reports the config path.
+`triggerAtPercent` defaults to 75%; Pi Session Continuity makes synthesis fit at that threshold by bounding transcript material instead of lowering the default. `synthesisEffort` controls Continuity Brief synthesis reasoning/thinking level and accepts `inherit`, `minimal`, `low`, `medium`, `high`, or `xhigh`. `artifactDirectory` resolves under `<workspace>/<CONFIG_DIR_NAME>/` unless absolute. Invalid config disables automatic behavior and reports the config path.
 
 In interactive Pi sessions, `/continuity settings` can update this file for the public config fields. In non-interactive contexts, edit the JSON directly or run `/continuity settings` for textual inspection.
 
 ### Automatic handoff boundary and native Pi auto-compaction
 
-Local v0.1.2 automatic handoffs evaluate in Pi's `context` hook before the next provider request, not in `turn_end`. The extension only triggers after the message context ends with a complete assistant/tool-result batch: the assistant tool-call ids exactly match the following tool-result ids.
+Automatic handoffs evaluate in Pi's `context` hook before the next provider request, not in `turn_end`. The extension only triggers after the message context ends with a complete assistant/tool-result batch: the assistant tool-call ids exactly match the following tool-result ids.
+
+The synthesis input is budgeted separately from raw branch size. Large transcripts/tool outputs are handled recency-first: older transcript material is omitted with an explicit diagnostic note before the synthesis provider call, so the default 75% trigger still has room to write a Continuity Brief.
+
+The trigger estimates context tokens from the real messages that will be sent to the provider, not the stale `ctx.getContextUsage()` value. When the threshold is reached, the extension aborts the active agent run before starting the handoff, preventing the next provider request from racing with synthesis and compaction.
 
 End-to-end automatic flow:
 

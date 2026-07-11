@@ -43,7 +43,11 @@ import {
 	ARCHIVE_RETENTION_LIMIT,
 	PRODUCT_NAME,
 	SINGLE_FLIGHT_WINDOW_MS,
+	SYNTHESIS_CHARS_PER_TOKEN,
 	SYNTHESIS_MAX_TOKENS,
+	SYNTHESIS_TRANSCRIPT_BUDGET_CONTEXT_PERCENT,
+	SYNTHESIS_TRANSCRIPT_MAX_TOKENS,
+	SYNTHESIS_TRANSCRIPT_MIN_TOKENS,
 } from "./constants.js";
 
 export interface HandoffState {
@@ -109,6 +113,41 @@ export function extractBranchMessages(ctx: ExtensionContext): AgentMessage[] {
 				entry.type === "message",
 		)
 		.map((entry) => entry.message);
+}
+
+export function deriveSynthesisTranscriptBudgetTokens(
+	contextWindow: number,
+): number {
+	const windowBudget = Math.floor(
+		Math.max(0, contextWindow) *
+			(SYNTHESIS_TRANSCRIPT_BUDGET_CONTEXT_PERCENT / 100),
+	);
+	return Math.min(
+		SYNTHESIS_TRANSCRIPT_MAX_TOKENS,
+		Math.max(SYNTHESIS_TRANSCRIPT_MIN_TOKENS, windowBudget),
+	);
+}
+
+export function boundSynthesisTranscript(
+	conversationText: string,
+	contextWindow: number,
+): string {
+	const budgetTokens = deriveSynthesisTranscriptBudgetTokens(contextWindow);
+	const budgetChars = budgetTokens * SYNTHESIS_CHARS_PER_TOKEN;
+	if (conversationText.length <= budgetChars) return conversationText;
+
+	const omissionNote = [
+		`[${PRODUCT_NAME} synthesis input bounded: older transcript material was omitted before synthesis so the Continuity Brief can be generated at the configured 75% trigger threshold.]`,
+		"The omitted material is not available to this synthesis call. Do not invent facts from omitted material; summarize only the included recent transcript, active instructions, and frontmatter metadata.",
+	].join("\n");
+	const tailBudgetChars = Math.max(0, budgetChars - omissionNote.length - 2);
+	const tail = conversationText.slice(-tailBudgetChars);
+	const firstNewline = tail.indexOf("\n");
+	const alignedTail =
+		firstNewline >= 0 && firstNewline < 2_000
+			? tail.slice(firstNewline + 1)
+			: tail;
+	return `${omissionNote}\n\n${alignedTail}`;
 }
 
 export function buildSynthesisPrompt(
@@ -192,9 +231,13 @@ export async function synthesizeWithModel(
 	const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
 	if (!auth.ok) throw new Error(`synthesis auth failed: ${auth.error}`);
 
+	const conversationText = boundSynthesisTranscript(
+		input.conversationText,
+		model.contextWindow ?? input.frontmatter.contextWindow,
+	);
 	const prompt = buildSynthesisPrompt(
 		input.frontmatter,
-		input.conversationText,
+		conversationText,
 		input.systemPrompt,
 	);
 	const reasoning = resolveSynthesisReasoning(model, config);
@@ -524,8 +567,9 @@ export async function runContinuityHandoff(
 		);
 
 		const branchMessages = extractBranchMessages(ctx);
-		const conversationText = serializeConversation(
-			convertToLlm(branchMessages),
+		const conversationText = boundSynthesisTranscript(
+			serializeConversation(convertToLlm(branchMessages)),
+			frontmatter.contextWindow,
 		);
 		const systemPrompt = ctx.getSystemPrompt();
 		const synthesize =
