@@ -1,0 +1,137 @@
+# RUN-0017 Validation Log
+
+CWD: `/home/ubuntu/pi-session-continuity`
+Run: RUN-0017
+Scope: local-only Pi Session Continuity v0.1.2 hardening
+
+## Command evidence
+
+### CMD-0001 — SpecForge drift-check before opening run
+
+Command:
+
+```bash
+python3 /home/ubuntu/.claude/skills/specforge-flow/validators/validate-flow-artifacts.py --repo-root . --drift-check specforge/runs
+```
+
+Exit: 0
+Summary: `drift-check OK: no tracked changes under specforge/runs`.
+
+### CMD-0002 — Open run manifest validation
+
+Command:
+
+```bash
+python3 /home/ubuntu/.claude/skills/specforge-flow/validators/validate-flow-artifacts.py --repo-root . --run-dir specforge/runs/RUN-0017 --report-dir specforge/runs/RUN-0017/validator-reports/open
+```
+
+Exit: 0
+Summary: run-dir validator passed for active RUN-0017. Advisory architecture context checks reported the repository's current layout as unrecognized/missing architecture context; this was advisory and non-blocking.
+Report: `validator-reports/open/RUN-0017.run-dir-report.yaml`
+
+### CMD-0003 — Parent validation after worker implementation
+
+Command:
+
+```bash
+npm test
+npm run typecheck
+npm pack --dry-run
+```
+
+Exit: 0 for all commands.
+Summary:
+- `npm test`: 63 tests passed before singleton repair.
+- `npm run typecheck`: `tsc --noEmit` passed.
+- `npm pack --dry-run`: completed dry-run only; tarball name reported `pi-session-continuity-0.1.1.tgz`.
+
+### CMD-0004 — Parent validation after singleton repair
+
+Command:
+
+```bash
+npm test
+npm run typecheck
+npm pack --dry-run
+```
+
+Exit: 0 for all commands.
+Summary:
+- `npm test`: 65 tests passed.
+- `npm run typecheck`: `tsc --noEmit` passed.
+- `npm pack --dry-run`: completed dry-run only; tarball name reported `pi-session-continuity-0.1.1.tgz`.
+
+### CMD-0005 — Pi-lens diagnostics on edited paths
+
+Command:
+
+```text
+lens_diagnostics(mode="all", paths=[edited paths])
+```
+
+Exit/tool status: completed.
+Summary: no blocking TypeScript/LSP errors reported for edited code paths. Markdown line-length warnings were reported in `AGENTS.md`; the new long trigger instruction line was wrapped before final validation.
+
+### CMD-0006 — Parent validation after AGENTS semantic alignment
+
+Command:
+
+```bash
+npm test
+npm run typecheck
+npm pack --dry-run
+```
+
+Exit: 0 for all commands.
+Summary:
+- `npm test`: 65 tests passed.
+- `npm run typecheck`: `tsc --noEmit` passed.
+- `npm pack --dry-run`: completed dry-run only; tarball name reported `pi-session-continuity-0.1.1.tgz`.
+
+### CMD-0007 — Final parent validation after AGENTS line wrap
+
+Command:
+
+```bash
+npm test
+npm run typecheck
+npm pack --dry-run
+```
+
+Exit: 0 for all commands.
+Summary:
+- `npm test`: 8 files passed, 65 tests passed. stdout sha256 `fc5b7bb12e8d6834c61c3b23b79d705940aa9637218b0d983f6c27adf1839404`.
+- `npm run typecheck`: `tsc --noEmit` passed. stdout sha256 `7463eebaf747d4ea2cc827770b6a1aef1c11011df9d24d7e8ae0c2a7381e23db`.
+- `npm pack --dry-run`: completed dry-run only; tarball name reported `pi-session-continuity-0.1.1.tgz`. stdout sha256 `ccf0abb9a2f87f2ce798f159222d28a97e9a4d7ed7304d66217719a29af22ea4`.
+
+## Review evidence
+
+- REV-0001: `review-r1.md` — independent review returned REPAIR-NOW for singleton scope.
+- REV-0002: `review-r2.md` — independent rereview returned PASS after singleton repair.
+- REV-0003: `review-r3.md` — independent final review returned PASS after AGENTS alignment.
+
+### CMD-0008 — Final SpecForge Flow run validator
+
+Command:
+
+```bash
+python3 /home/ubuntu/.claude/skills/specforge-flow/validators/validate-flow-artifacts.py --repo-root . --run-dir specforge/runs/RUN-0017 --report-dir specforge/runs/RUN-0017/validator-reports/final
+```
+
+Exit: 0.
+Summary: `missing_review`, `simplify_no_disposition`, `weak_evidence`, `duplicate_open_decision`, and `lane_vocabulary` all passed. Architecture context checks remained advisory due to the repository's current SpecForge layout.
+Report: `validator-reports/final/RUN-0017.run-dir-report.yaml`
+
+## External mutation check
+
+No commands were run to publish, push, tag, install, remove packages, or mutate global Pi settings. The only pack command was `npm pack --dry-run`. No `.claude` paths or `/home/ubuntu/.pi/**` settings were edited.
+
+## Evidence reconciliation
+
+- KA-001 satisfied by `extensions/session-continuity/index.ts`, `src/trigger.ts`, and tests in `test/extension-command.test.ts` asserting `context` hook and no `turn_end` registration.
+- KA-002 / NE-001 satisfied by `hasCompleteAssistantToolResultBatch` tests in `test/trigger.test.ts` and incomplete-batch extension test.
+- KA-003 satisfied by command tests for top-level menu and settings direct path in `test/extension-command.test.ts`.
+- KA-004 satisfied by `docs/product-spec.md`, `README.md`, `CHANGELOG.md`, and `AGENTS.md` alignment.
+- NE-002 satisfied after repair by runtime-keyed singleton tests in `test/extension-command.test.ts`.
+- NE-003 satisfied by usage-unavailable warning suppression test.
+- NE-004 satisfied by native auto-compaction warning test and docs; no `session_before_compact` arbitration was added.

@@ -1,6 +1,6 @@
 {
   "name": "pi-session-continuity",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Keep long-running Pi coding sessions recoverable with dull, durable handoffs.",
   "license": "MIT",
   "type": "module",

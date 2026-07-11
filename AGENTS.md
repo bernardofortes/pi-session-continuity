@@ -84,7 +84,10 @@ Use explicit Pi extension APIs as specified:
 - Register command namespace `/continuity` and dispatch subcommands from args.
 - Support `/continuity status`, `/continuity checkpoint`, and `/continuity settings` for v0.1.0.
 - Use `session_start` for session-scoped state and stale artifact inspection.
-- Use a low-risk post-turn event such as `turn_end` for threshold checks.
+- For automatic threshold checks, follow `docs/product-spec.md`: use a safe
+  provider-boundary trigger, currently the `context` hook after a complete
+  assistant/tool-result batch and before the next provider request; do not use
+  `turn_end` for automatic handoff triggering.
 - Use `ctx.getContextUsage()` and active model context metadata for trigger math.
 - Use `ctx.sessionManager` for session id, session file, branch, and leaf identity.
 - Use Pi model registry/auth APIs for `synthesisModel` resolution.

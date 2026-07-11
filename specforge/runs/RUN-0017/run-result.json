@@ -1,0 +1,247 @@
+{
+  "schema": "specforge.flow.lean-run-result.v1",
+  "run_id": "RUN-0017",
+  "status": "done",
+  "intent_ref": "specforge/runs/RUN-0017/intent.md",
+  "intent_summary": [
+    "Implement local-only Pi Session Continuity v0.1.2 hardening.",
+    "Replace turn_end automatic triggering with a context-hook safe-boundary guard that fires only after complete tool-result batches before the next provider request.",
+    "Keep native Pi auto-compaction unsupported/not recommended for reliable automatic handoffs and warn strongly instead of arbitrating.",
+    "Add duplicate-load singleton guard, top-level /continuity menu, warning throttling, and clearer end-to-end documentation."
+  ],
+  "lane": {
+    "complexity": "normal-complex",
+    "architecture": "A1",
+    "architecture_note": "Focused hardening within existing extension architecture and product spec. Repository has historical specforge/runs authority but no docs/specforge/architecture-context-v0.yaml; absence is recorded as a Flow advisory and not treated as permission to publish or mutate external state."
+  },
+  "base_commit": "2cd38f095e53ac26f533ce62958bf93faf962e44",
+  "allowed_scope": [
+    "AGENTS.md",
+    "docs/product-spec.md",
+    "README.md",
+    "CHANGELOG.md",
+    "package.json",
+    "extensions/session-continuity/index.ts",
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "specforge/runs/RUN-0017/**"
+  ],
+  "forbidden_scope": [
+    "/home/ubuntu/.claude/**",
+    "/home/ubuntu/.pi/**",
+    "npm publish",
+    "git push",
+    "git tag",
+    "pi install",
+    "pi remove",
+    "global Pi settings mutation",
+    "session_before_compact arbitration/coexistence logic"
+  ],
+  "planned_validation": [
+    {
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "purpose": "unit coverage for trigger, singleton, menu, warnings, and invariant behavior"
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "purpose": "TypeScript API/type safety"
+    },
+    {
+      "argv": [
+        "npm",
+        "pack",
+        "--dry-run"
+      ],
+      "purpose": "local package contents check without publishing"
+    }
+  ],
+  "plan": {
+    "review_required": true,
+    "simplify_required": true,
+    "slice": "v0.1.2-local-hardening",
+    "route": "structured-implementation-with-worker-and-review",
+    "writer": "spawned implement worker via pi-subagents worker",
+    "notes": [
+      "Product spec must be updated before behavior code.",
+      "Keep implementation local-only and do not publish/install.",
+      "Manual checkpoint behavior remains a full Continuity Handoff and should bypass only automatic trigger timing changes."
+    ]
+  },
+  "evidence_plan": {
+    "known_answer_cases": [
+      {
+        "id": "KA-001",
+        "description": "Automatic trigger no longer registers on turn_end and instead evaluates safe context boundaries."
+      },
+      {
+        "id": "KA-002",
+        "description": "A complete assistant/tool-result batch is required before automatic mid-run handoff can start."
+      },
+      {
+        "id": "KA-003",
+        "description": "Bare /continuity opens a top-level menu with checkpoint, while /continuity settings opens settings directly."
+      },
+      {
+        "id": "KA-004",
+        "description": "README/product spec explain save artifact -> compact preserving recent raw tokens -> resume from disk artifact."
+      }
+    ],
+    "negative_or_error_cases": [
+      {
+        "id": "NE-001",
+        "description": "Incomplete tool-result batches do not trigger automatic handoff."
+      },
+      {
+        "id": "NE-002",
+        "description": "Duplicate extension load does not register duplicate handlers or commands."
+      },
+      {
+        "id": "NE-003",
+        "description": "Repeated usage-unavailable automatic checks do not spam warnings."
+      },
+      {
+        "id": "NE-004",
+        "description": "Native Pi auto-compaction enabled emits a strong unsupported/not-recommended warning but no arbitration path."
+      }
+    ],
+    "required_evidence": [
+      {
+        "kind": "test",
+        "description": "Automated test suite covers changed behavior and still passes."
+      },
+      {
+        "kind": "contract",
+        "description": "Product spec and public docs match the implemented v0.1.2 contract and local-only constraints."
+      }
+    ]
+  },
+  "changed_paths": [
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/product-spec.md",
+    "extensions/session-continuity/index.ts",
+    "src/trigger.ts",
+    "test/extension-command.test.ts",
+    "test/trigger.test.ts"
+  ],
+  "claims": [
+    {
+      "claim": "Product contract and public docs describe v0.1.2 local safe-boundary behavior, native auto-compaction warning/no-arbitration policy, top-level /continuity menu, and end-to-end save -> compact-with-recent-tokens -> disk-resume flow.",
+      "evidence": [
+        "validation.log",
+        "review-r2.md",
+        "review-r3.md"
+      ]
+    },
+    {
+      "claim": "Automatic PSC handoff no longer uses turn_end; it evaluates in the context hook only after a complete assistant/tool-result batch before the next provider request.",
+      "evidence": [
+        "validation.log",
+        "review-r2.md"
+      ]
+    },
+    {
+      "claim": "The duplicate-load singleton guard is scoped to runtime/load-group identity and releases on session_shutdown, preventing duplicate same-runtime registration without suppressing independent runtimes.",
+      "evidence": [
+        "validation.log",
+        "review-r1.md",
+        "review-r2.md"
+      ]
+    },
+    {
+      "claim": "/continuity opens a top-level menu with Status, Create checkpoint now, Settings, Done while /continuity settings remains a direct settings shortcut.",
+      "evidence": [
+        "validation.log",
+        "review-r1.md",
+        "review-r2.md"
+      ]
+    },
+    {
+      "claim": "Local validation passed after the final diff: npm test, npm run typecheck, and npm pack --dry-run.",
+      "evidence": [
+        "validation.log"
+      ]
+    },
+    {
+      "claim": "No npm publish, GitHub push/tag, .claude publication/install, global Pi settings mutation, or Pi package install was performed.",
+      "evidence": [
+        "validation.log",
+        "review-r3.md"
+      ]
+    }
+  ],
+  "non_claims": [
+    "No npm package was published and npm latest remains outside this local run.",
+    "No GitHub commit, push, release, or tag was created by this run.",
+    "No .claude publication/install or global Pi settings mutation was performed.",
+    "No complex session_before_compact arbitration/coexistence with native Pi auto-compaction was added.",
+    "No guarantee is claimed for automatic handoff in no-tool prompt/response sessions under v0.1.2 safe-boundary triggering."
+  ],
+  "validation_refs": [
+    "validation.log"
+  ],
+  "review_refs": [
+    "review-r1.md",
+    "review-r2.md",
+    "review-r3.md"
+  ],
+  "simplify_refs": [
+    "simplify.md"
+  ],
+  "simplify_triggers_observed": [
+    "changed-paths-gt-3"
+  ],
+  "closure_refs": [
+    "run-result.json",
+    "validation.log",
+    "review-r1.md",
+    "review-r2.md",
+    "review-r3.md",
+    "simplify.md"
+  ],
+  "spawns": [
+    {
+      "role": "implement",
+      "binding": "pi-subagents builtin worker",
+      "model_used": "unknown",
+      "temperature": "cold",
+      "purpose": "implement-psc-v012-safe-boundary"
+    },
+    {
+      "role": "adversarial-review",
+      "binding": "pi-subagents builtin reviewer",
+      "model_used": "unknown",
+      "temperature": "cold",
+      "purpose": "review-psc-v012-safe-boundary"
+    },
+    {
+      "role": "implement",
+      "binding": "pi-subagents builtin worker",
+      "model_used": "unknown",
+      "temperature": "cold",
+      "purpose": "repair-psc-singleton-runtime-scope"
+    },
+    {
+      "role": "adversarial-review",
+      "binding": "pi-subagents builtin reviewer",
+      "model_used": "unknown",
+      "temperature": "cold",
+      "purpose": "rereview-psc-v012-final"
+    },
+    {
+      "role": "adversarial-review",
+      "binding": "pi-subagents builtin reviewer",
+      "model_used": "unknown",
+      "temperature": "cold",
+      "purpose": "final-review-psc-v012-agents-alignment"
+    }
+  ]
+}

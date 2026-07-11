@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2 — 2026-07-11
+
+- Move automatic threshold checks from `turn_end` to the Pi `context` hook before the next provider request.
+- Add a safe-boundary guard so automatic handoffs only run after a complete assistant/tool-result batch.
+- Change `/continuity` with no args to open a top-level menu: Status, Create checkpoint now, Settings, Done; `/continuity settings` remains direct.
+- Strengthen the native Pi auto-compaction warning: reliable automatic PSC handoffs require `compaction.enabled=false`; no native compaction arbitration is implemented.
+- Suppress repeated context-usage-unavailable warnings for the same session/config while preserving one visible diagnostic.
+- Add a duplicate runtime-load guard so only the first package copy registers commands/events in a process/runtime.
+
 ## 0.1.1 — 2026-07-09
 
 - Change the default automatic threshold from 75% to 70% to reduce immediate contention with Pi native auto-compaction thresholds.

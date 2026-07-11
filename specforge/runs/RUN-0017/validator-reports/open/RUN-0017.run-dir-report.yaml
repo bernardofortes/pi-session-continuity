@@ -1,0 +1,111 @@
+{
+  "schema": "specforge.flow.v1.run-dir-report",
+  "validator": "epn0004-active-scaffold",
+  "run_dir": "specforge/runs/RUN-0017",
+  "git_head": "2cd38f095e53ac26f533ce62958bf93faf962e44",
+  "checked_at": "2026-07-10T19:15:23.212318+00:00",
+  "status": "pass",
+  "results": [
+    {
+      "rule": "missing_review",
+      "status": "pass",
+      "severity": "advisory",
+      "message": "review refs are present or not required",
+      "findings": [],
+      "required_repairs": [],
+      "inputs": [
+        {
+          "path": "specforge/runs/RUN-0017/run-result.json",
+          "sha256": "b76cc9e46635346f47a28af002a495f2bfdfdb564ceca01b6bcb2516fc4554e7",
+          "git_head": "2cd38f095e53ac26f533ce62958bf93faf962e44"
+        }
+      ]
+    },
+    {
+      "rule": "simplify_no_disposition",
+      "status": "pass",
+      "severity": "advisory",
+      "message": "run-result is not final",
+      "findings": [],
+      "required_repairs": [],
+      "inputs": [
+        {
+          "path": "specforge/runs/RUN-0017/run-result.json",
+          "sha256": "b76cc9e46635346f47a28af002a495f2bfdfdb564ceca01b6bcb2516fc4554e7",
+          "git_head": "2cd38f095e53ac26f533ce62958bf93faf962e44"
+        }
+      ]
+    },
+    {
+      "rule": "weak_evidence",
+      "status": "pass",
+      "severity": "advisory",
+      "message": "run-result is not final",
+      "findings": [],
+      "required_repairs": [],
+      "inputs": [
+        {
+          "path": "specforge/runs/RUN-0017/run-result.json",
+          "sha256": "b76cc9e46635346f47a28af002a495f2bfdfdb564ceca01b6bcb2516fc4554e7",
+          "git_head": "2cd38f095e53ac26f533ce62958bf93faf962e44"
+        }
+      ]
+    },
+    {
+      "rule": "duplicate_open_decision",
+      "status": "pass",
+      "severity": "advisory",
+      "message": "no duplicate open decision requests found",
+      "findings": [],
+      "required_repairs": [],
+      "inputs": [
+        {
+          "path": "specforge/runs/RUN-0017/run-result.json",
+          "sha256": "b76cc9e46635346f47a28af002a495f2bfdfdb564ceca01b6bcb2516fc4554e7",
+          "git_head": "2cd38f095e53ac26f533ce62958bf93faf962e44"
+        }
+      ]
+    },
+    {
+      "rule": "lane_vocabulary",
+      "status": "pass",
+      "severity": "advisory",
+      "message": "lane values are within the contract vocabulary or absent",
+      "findings": [],
+      "required_repairs": [],
+      "inputs": [
+        {
+          "path": "specforge/runs/RUN-0017/run-result.json",
+          "sha256": "b76cc9e46635346f47a28af002a495f2bfdfdb564ceca01b6bcb2516fc4554e7",
+          "git_head": "2cd38f095e53ac26f533ce62958bf93faf962e44"
+        }
+      ]
+    }
+  ],
+  "advisories": [
+    {
+      "rule": "arch_context_missing",
+      "verdict": "advisory",
+      "message": "cannot check: unrecognized run layout (tried: .specforge/runs/ (harness-tree), dogfood-targets/*/specforge/runs/ (dogfood-nested target), specforge/runs/ or .specforge/runs/ at repo root with docs/specforge/ present (target-root))"
+    },
+    {
+      "rule": "arch_freshness",
+      "verdict": "advisory",
+      "message": "cannot check: unrecognized run layout (tried: .specforge/runs/ (harness-tree), dogfood-targets/*/specforge/runs/ (dogfood-nested target), specforge/runs/ or .specforge/runs/ at repo root with docs/specforge/ present (target-root))"
+    },
+    {
+      "rule": "arch_approval_missing",
+      "verdict": "ok",
+      "message": "run-result is not terminal; approval rule applies at terminal status only"
+    },
+    {
+      "rule": "trigger_id_hygiene",
+      "verdict": "ok",
+      "message": "no simplify_triggers_observed recorded"
+    }
+  ],
+  "non_claims_checked": [
+    "validator is a local CLI scaffold, not a runtime/daemon/router",
+    "run-dir pass does not prove final Skill-only Flow V1 readiness"
+  ]
+}

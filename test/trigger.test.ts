@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ResolvedContinuityConfig } from "../src/config.js";
-import { decideAutomaticTrigger } from "../src/trigger.js";
+import {
+	decideAutomaticTrigger,
+	hasCompleteAssistantToolResultBatch,
+} from "../src/trigger.js";
 
 function config(
 	overrides: Partial<ResolvedContinuityConfig> = {},
@@ -20,6 +23,90 @@ function config(
 		...overrides,
 	};
 }
+
+function assistantWithToolCalls(ids: string[]) {
+	return {
+		role: "assistant" as const,
+		content: ids.map((id) => ({
+			type: "toolCall" as const,
+			id,
+			name: `tool_${id}`,
+			arguments: {},
+		})),
+		api: "openai" as const,
+		provider: "openai" as const,
+		model: "model",
+		usage: {
+			input: 1,
+			output: 1,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 2,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+		stopReason: "toolUse" as const,
+		timestamp: 1,
+	};
+}
+
+function toolResult(id: string) {
+	return {
+		role: "toolResult" as const,
+		toolCallId: id,
+		toolName: `tool_${id}`,
+		content: [{ type: "text" as const, text: "done" }],
+		isError: false,
+		timestamp: 2,
+	};
+}
+
+describe("safe-boundary assistant/tool-result batch detection", () => {
+	it("accepts a complete assistant tool-call batch followed by matching tool results", () => {
+		expect(
+			hasCompleteAssistantToolResultBatch([
+				{ role: "user", content: "do work", timestamp: 0 },
+				assistantWithToolCalls(["a", "b"]),
+				toolResult("a"),
+				toolResult("b"),
+			]),
+		).toBe(true);
+	});
+
+	it("rejects incomplete, extra, duplicate, out-of-order, and non-batch tails", () => {
+		expect(
+			hasCompleteAssistantToolResultBatch([
+				assistantWithToolCalls(["a", "b"]),
+				toolResult("a"),
+			]),
+		).toBe(false);
+		expect(
+			hasCompleteAssistantToolResultBatch([
+				assistantWithToolCalls(["a"]),
+				toolResult("a"),
+				toolResult("b"),
+			]),
+		).toBe(false);
+		expect(
+			hasCompleteAssistantToolResultBatch([
+				assistantWithToolCalls(["a", "b"]),
+				toolResult("b"),
+				toolResult("a"),
+			]),
+		).toBe(false);
+		expect(
+			hasCompleteAssistantToolResultBatch([
+				assistantWithToolCalls(["a"]),
+				{ ...toolResult("a"), toolName: "" },
+			]),
+		).toBe(false);
+		expect(
+			hasCompleteAssistantToolResultBatch([
+				assistantWithToolCalls(["a"]),
+				{ role: "user", content: "next", timestamp: 3 },
+			]),
+		).toBe(false);
+	});
+});
 
 describe("automatic threshold trigger decisions", () => {
 	it("skips disabled, untrusted, invalid, and unavailable usage states", () => {
