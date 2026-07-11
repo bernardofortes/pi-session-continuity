@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4 — 2026-07-11
+
+- Fix synthesis abort: move `ctx.abort()` from before the handoff to after the Continuity Brief is written to disk and before compaction. Previously, aborting before synthesis killed the synthesis provider call via `ctx.signal`.
+
 ## 0.1.3 — 2026-07-11
 
 - Restore the public/default automatic trigger threshold to 75%.

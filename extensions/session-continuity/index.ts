@@ -328,11 +328,6 @@ export default function sessionContinuityExtension(pi: ExtensionAPI) {
 			return;
 		}
 
-		// Abort the active agent run before handoff so the next provider request
-		// does not race with synthesis and compaction. This mirrors pi-continue's
-		// mid-run guard: abort first, then write brief, compact, and resume.
-		ctx.abort();
-
 		ctx.ui.notify(
 			`${PRODUCT_NAME}: context threshold reached; preparing Continuity Handoff.`,
 			"info",

@@ -596,6 +596,11 @@ export async function runContinuityHandoff(
 		);
 
 		if (options.requestCompaction) {
+			// Abort the active agent run now that the brief is safely on disk.
+			// This prevents the next provider request from racing with
+			// compaction. Synthesis must run before this abort because it uses
+			// ctx.signal; aborting earlier would kill the synthesis call.
+			ctx.abort();
 			const keepRecentTokens = deriveKeepRecentTokens(
 				frontmatter.contextWindow,
 				config.keepRecentPercent,

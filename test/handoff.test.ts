@@ -293,6 +293,56 @@ describe("continuity handoff", () => {
 		expect(archives).not.toContain("2000-01-01T00-00-02-000Z-old-2.md");
 	});
 
+	it("aborts the active run after the brief is saved but before compaction on threshold handoffs", async () => {
+		const config = await loadConfigFromDisk(dir, ".pi", true);
+		const callOrder: string[] = [];
+		const ctx = fakeCtx({
+			isIdle: () => true,
+			compact: vi.fn(() => {
+				callOrder.push("compact");
+			}),
+			abort: vi.fn(() => callOrder.push("abort")),
+		});
+		const result = await runContinuityHandoff(
+			{ sendUserMessage: vi.fn() },
+			ctx,
+			config,
+			createHandoffState(),
+			{
+				reason: "threshold",
+				requestCompaction: true,
+				synthesize: async () => {
+					callOrder.push("synthesize");
+					return body();
+				},
+			},
+		);
+
+		expect(result.ok).toBe(true);
+		expect(callOrder).toEqual(["synthesize", "abort", "compact"]);
+	});
+
+	it("does not abort on manual checkpoint without compaction", async () => {
+		const config = await loadConfigFromDisk(dir, ".pi", true);
+		const ctx = fakeCtx({
+			abort: vi.fn(),
+		});
+		const result = await runContinuityHandoff(
+			{ sendUserMessage: vi.fn() },
+			ctx,
+			config,
+			createHandoffState(),
+			{
+				reason: "manual",
+				requestCompaction: false,
+				synthesize: async () => body(),
+			},
+		);
+
+		expect(result.ok).toBe(true);
+		expect(ctx.abort).not.toHaveBeenCalled();
+	});
+
 	it("queues no prompt when synthesis fails and writes failed postmortem when possible", async () => {
 		const config = await loadConfigFromDisk(dir, ".pi", true);
 		const sent: string[] = [];
@@ -656,7 +706,9 @@ describe("continuity handoff", () => {
 
 		onComplete?.();
 		await waitFor(() => expect(sent).toHaveLength(1));
-		expect(state.lastFailure).toContain("post-queue artifact update failed");
+		await waitFor(() =>
+			expect(state.lastFailure).toContain("post-queue artifact update failed"),
+		);
 		expect(
 			readdirSync(join(config.artifactDirectoryPath, "session-a", "lock")),
 		).toEqual([]);
